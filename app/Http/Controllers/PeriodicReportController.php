@@ -12,6 +12,7 @@ use App\Services\PeriodicAggregation;
 use App\Services\PeriodicReportWorkflow;
 use App\Support\EthiopianDate;
 use App\Support\Period;
+use App\Support\Signature;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -140,11 +141,12 @@ class PeriodicReportController extends Controller
             'status' => ReportStatus::Draft,
             'payload' => $validated['payload'],
             'notes' => $validated['notes'],
+            'signature_data' => $validated['signature_data'],
         ]);
         $this->workflow->record($report, $user, 'create', null, ReportStatus::Draft);
 
         if ($request->input('action') === 'submit') {
-            $this->workflow->submit($report, $user);
+            $this->workflow->submit($report, $user, $validated['signature_data']);
 
             return redirect()->route('periodic.show', $report)->with('status', 'ሪፖርቱ ለወረዳ ተልኳል።');
         }
@@ -186,10 +188,11 @@ class PeriodicReportController extends Controller
             'fiscal_year' => EthiopianDate::fiscalYear($reportDate),
             'payload' => $validated['payload'],
             'notes' => $validated['notes'],
+            'signature_data' => $validated['signature_data'] ?: $periodicReport->signature_data,
         ]);
 
         if ($request->input('action') === 'submit') {
-            $this->workflow->submit($periodicReport, $request->user());
+            $this->workflow->submit($periodicReport, $request->user(), $periodicReport->signature_data);
 
             return redirect()->route('periodic.show', $periodicReport)->with('status', 'ሪፖርቱ ለወረዳ ተልኳል።');
         }
@@ -209,7 +212,7 @@ class PeriodicReportController extends Controller
     public function submit(Request $request, PeriodicReport $periodicReport): RedirectResponse
     {
         $this->authorize('submit', $periodicReport);
-        $this->workflow->submit($periodicReport, $request->user());
+        $this->workflow->submit($periodicReport, $request->user(), Signature::fromRequest($request));
 
         return redirect()->route('periodic.show', $periodicReport)->with('status', 'ሪፖርቱ ለወረዳ ተልኳል።');
     }
@@ -217,8 +220,11 @@ class PeriodicReportController extends Controller
     public function verify(Request $request, PeriodicReport $periodicReport): RedirectResponse
     {
         $this->authorize('verify', $periodicReport);
-        $note = $request->validate(['note' => ['nullable', 'string', 'max:1000']])['note'] ?? null;
-        $this->workflow->verify($periodicReport, $request->user(), $note);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
+        ]);
+        $this->workflow->verify($periodicReport, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('periodic.show', $periodicReport)->with('status', 'ሪፖርቱ በወረዳ ተረጋግጦ ወደ ዞን ተላልፏል።');
     }
@@ -226,8 +232,11 @@ class PeriodicReportController extends Controller
     public function approve(Request $request, PeriodicReport $periodicReport): RedirectResponse
     {
         $this->authorize('approve', $periodicReport);
-        $note = $request->validate(['note' => ['nullable', 'string', 'max:1000']])['note'] ?? null;
-        $this->workflow->approve($periodicReport, $request->user(), $note);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
+        ]);
+        $this->workflow->approve($periodicReport, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('periodic.show', $periodicReport)->with('status', 'ሪፖርቱ በዞን ጸድቋል።');
     }
@@ -248,6 +257,7 @@ class PeriodicReportController extends Controller
             'report_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
             'period_type' => ['required', Rule::enum(PeriodGranularity::class)],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'signature_data' => Signature::rules(),
         ];
         $attributes = [
             'report_date' => 'ቀን',
@@ -349,6 +359,7 @@ class PeriodicReportController extends Controller
             'period_type' => $data['period_type'],
             'payload' => $payload,
             'notes' => $data['notes'] ?? null,
+            'signature_data' => $data['signature_data'] ?? null,
         ];
     }
 }

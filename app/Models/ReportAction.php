@@ -9,7 +9,7 @@ class ReportAction extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['extension_report_id', 'user_id', 'action', 'from_status', 'to_status', 'note', 'created_at'];
+    protected $fillable = ['extension_report_id', 'user_id', 'action', 'from_status', 'to_status', 'note', 'signature_data', 'created_at'];
 
     protected function casts(): array
     {

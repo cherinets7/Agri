@@ -1,13 +1,7 @@
 {{-- expects $period, optional $woredas, $woredaId, $statuses --}}
 <form method="GET" class="card filters">
-    <div>
-        <label for="from">ከ</label>
-        <input id="from" type="date" name="from" value="{{ $period->from->toDateString() }}">
-    </div>
-    <div>
-        <label for="to">እስከ</label>
-        <input id="to" type="date" name="to" value="{{ $period->to->toDateString() }}">
-    </div>
+    <x-ethiopian-date-input name="from" id="from" label="ከ" :value="$period->from->toDateString()" />
+    <x-ethiopian-date-input name="to" id="to" label="እስከ" :value="$period->to->toDateString()" />
     @if(isset($woredas) && $woredas->isNotEmpty())
         <div>
             <label for="woreda">ወረዳ</label>

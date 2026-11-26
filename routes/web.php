@@ -12,6 +12,8 @@ use App\Http\Controllers\ExtensionReportController;
 use App\Http\Controllers\FarmerFeedbackController;
 use App\Http\Controllers\InputDispatchController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\MapController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeriodicReportController;
 use App\Http\Controllers\PlanMatrixController;
 use App\Http\Controllers\PlanStructureController;
@@ -143,4 +145,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
     Route::post('/locations', [LocationController::class, 'store'])->name('locations.store');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('/notifications/remind-missing', [NotificationController::class, 'remindMissing'])->name('notifications.remind-missing');
+
+    Route::get('/map', [MapController::class, 'index'])->name('map.index');
 });

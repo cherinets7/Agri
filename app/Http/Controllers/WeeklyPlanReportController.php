@@ -9,6 +9,7 @@ use App\Models\WeeklyPlanReport;
 use App\Services\PlanMatrix;
 use App\Services\WeeklyPlanWorkflow;
 use App\Support\EthiopianDate;
+use App\Support\Signature;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -88,6 +89,7 @@ class WeeklyPlanReportController extends Controller
                 'week_start' => $week,
                 'status' => WeeklyPlanStatus::Draft,
                 'notes' => $request->input('notes'),
+                'signature_data' => $request->input('signature_data'),
             ]);
             $this->saveActuals($report, (array) $request->input('values', []));
             $this->workflow->record($report, $user, 'create', null, WeeklyPlanStatus::Draft);
@@ -118,7 +120,10 @@ class WeeklyPlanReportController extends Controller
         $request->validate($this->valueRules());
 
         DB::transaction(function () use ($request, $weeklyReport) {
-            $weeklyReport->update(['notes' => $request->input('notes')]);
+            $weeklyReport->update([
+                'notes' => $request->input('notes'),
+                'signature_data' => $request->input('signature_data') ?: $weeklyReport->signature_data,
+            ]);
             $this->saveActuals($weeklyReport, (array) $request->input('values', []));
         });
 
@@ -143,9 +148,12 @@ class WeeklyPlanReportController extends Controller
     public function approve(Request $request, WeeklyPlanReport $weeklyReport): RedirectResponse
     {
         $this->authorize('approve', $weeklyReport);
-        $request->validate(['note' => ['nullable', 'string', 'max:500']]);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:500'],
+            'signature_data' => Signature::rules(),
+        ]);
 
-        $this->workflow->approve($weeklyReport, $request->user(), $request->input('note'));
+        $this->workflow->approve($weeklyReport, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('weekly.show', $weeklyReport)->with('status', 'ሪፖርቱ ጸድቋል።');
     }
@@ -172,7 +180,8 @@ class WeeklyPlanReportController extends Controller
     private function doSubmit(Request $request, WeeklyPlanReport $report): RedirectResponse
     {
         try {
-            $this->workflow->submit($report, $request->user());
+            $sig = Signature::fromRequest($request) ?: $report->signature_data;
+            $this->workflow->submit($report, $request->user(), $sig);
         } catch (InvalidArgumentException) {
             return redirect()->route('weekly.edit', $report)->withErrors(['values' => 'ከመላክዎ በፊት ቢያንስ አንድ ክንውን ያስገቡ።']);
         }
@@ -186,6 +195,7 @@ class WeeklyPlanReportController extends Controller
             'values' => ['nullable', 'array'],
             'values.*' => ['nullable', 'numeric', 'min:0', 'max:999999999999'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
         ];
     }
 

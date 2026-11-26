@@ -8,6 +8,8 @@ use App\Models\ExpertWeeklySummaryAction;
 use App\Models\ExtensionReport;
 use App\Models\FarmerFeedback;
 use App\Models\User;
+use App\Notifications\ReportStatusNotification;
+use App\Support\EthiopianDate;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -46,7 +48,7 @@ class ExpertWeeklySummaryWorkflow
         ];
     }
 
-    public function record(ExpertWeeklySummary $summary, User $actor, string $action, ?ReportStatus $from, ReportStatus $to, ?string $note = null): void
+    public function record(ExpertWeeklySummary $summary, User $actor, string $action, ?ReportStatus $from, ReportStatus $to, ?string $note = null, ?string $signatureData = null): void
     {
         ExpertWeeklySummaryAction::create([
             'expert_weekly_summary_id' => $summary->id,
@@ -55,53 +57,68 @@ class ExpertWeeklySummaryWorkflow
             'from_status' => $from?->value,
             'to_status' => $to->value,
             'note' => $note,
+            'signature_data' => $signatureData,
             'created_at' => now(),
         ]);
     }
 
-    public function submit(ExpertWeeklySummary $summary, User $actor): ExpertWeeklySummary
+    public function submit(ExpertWeeklySummary $summary, User $actor, ?string $signatureData = null): ExpertWeeklySummary
     {
-        return DB::transaction(function () use ($summary, $actor) {
+        return DB::transaction(function () use ($summary, $actor, $signatureData) {
             $from = $summary->status;
+            $sig = $signatureData ?: $summary->signature_data;
             $summary->fill([
                 'status' => ReportStatus::Submitted,
                 'declared_at' => now(),
                 'submitted_at' => now(),
+                'signature_data' => $sig,
                 'return_reason' => null,
                 'returned_by' => null,
                 'returned_at' => null,
             ])->save();
-            $this->record($summary, $actor, 'submit', $from, ReportStatus::Submitted);
+            $this->record($summary, $actor, 'submit', $from, ReportStatus::Submitted, null, $sig);
 
             return $summary;
         });
     }
 
-    public function verify(ExpertWeeklySummary $summary, User $actor, ?string $note = null): ExpertWeeklySummary
+    public function verify(ExpertWeeklySummary $summary, User $actor, ?string $note = null, ?string $signatureData = null): ExpertWeeklySummary
     {
-        return DB::transaction(function () use ($summary, $actor, $note) {
+        return DB::transaction(function () use ($summary, $actor, $note, $signatureData) {
             $from = $summary->status;
             $summary->fill([
                 'status' => ReportStatus::WoredaVerified,
                 'woreda_verified_by' => $actor->id,
                 'woreda_verified_at' => now(),
+                'verified_signature_data' => $signatureData,
             ])->save();
-            $this->record($summary, $actor, 'verify', $from, ReportStatus::WoredaVerified, $note);
+            $this->record($summary, $actor, 'verify', $from, ReportStatus::WoredaVerified, $note, $signatureData);
 
             return $summary;
         });
     }
 
-    public function approve(ExpertWeeklySummary $summary, User $actor, ?string $note = null): ExpertWeeklySummary
+    public function approve(ExpertWeeklySummary $summary, User $actor, ?string $note = null, ?string $signatureData = null): ExpertWeeklySummary
     {
-        return DB::transaction(function () use ($summary, $actor, $note) {
+        return DB::transaction(function () use ($summary, $actor, $note, $signatureData) {
             $from = $summary->status;
             $summary->fill([
                 'status' => ReportStatus::ZoneApproved,
                 'zone_approved_by' => $actor->id,
                 'zone_approved_at' => now(),
+                'approved_signature_data' => $signatureData,
             ])->save();
-            $this->record($summary, $actor, 'approve', $from, ReportStatus::ZoneApproved, $note);
+            $this->record($summary, $actor, 'approve', $from, ReportStatus::ZoneApproved, $note, $signatureData);
+
+            if ($summary->user && $summary->user_id !== $actor->id) {
+                $et = EthiopianDate::format($summary->week_start);
+                $summary->user->notify(new ReportStatusNotification(
+                    title: "ሳምንታዊ ማጠቃለያ ጸድቋል ({$et})",
+                    message: "የ{$et} ሳምንታዊ ማጠቃለያዎ በ{$actor->name} ጸድቋል።",
+                    url: route('summaries.show', $summary),
+                    kind: 'approved',
+                ));
+            }
 
             return $summary;
         });
@@ -124,6 +141,16 @@ class ExpertWeeklySummaryWorkflow
                 'woreda_verified_at' => null,
             ])->save();
             $this->record($summary, $actor, 'return', $from, ReportStatus::Returned, $reason);
+
+            if ($summary->user && $summary->user_id !== $actor->id) {
+                $et = EthiopianDate::format($summary->week_start);
+                $summary->user->notify(new ReportStatusNotification(
+                    title: "ሳምንታዊ ማጠቃለያ ተመልሷል ({$et})",
+                    message: "ምክንያት፦ {$reason}",
+                    url: route('summaries.edit', $summary),
+                    kind: 'returned',
+                ));
+            }
 
             return $summary;
         });

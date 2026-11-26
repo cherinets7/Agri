@@ -12,8 +12,8 @@
             <dt>ወረዳ</dt><dd>{{ $woreda?->name_am }}</dd>
             <dt>ሪፖርት አድራጊ</dt><dd>{{ $report->user?->name }}</dd>
             <dt>ማስታወሻ</dt><dd>{{ $report->notes ?: '—' }}</dd>
-            @if($report->declared_at)<dt>ማረጋገጫ</dt><dd>{{ $report->user?->name }} — {{ $report->declared_at->format('Y-m-d H:i') }}</dd>@endif
-            @if($report->approved_at)<dt>ያጸደቀ</dt><dd>{{ $report->approver?->name }} — {{ $report->approved_at->format('Y-m-d H:i') }}</dd>@endif
+            @if($report->declared_at)<dt>ማረጋገጫ</dt><dd>{{ $report->user?->name }} — {{ $report->declared_at->format('Y-m-d H:i') }}@if($report->signature_data)<img class="sig-img" src="{{ $report->signature_data }}" alt="የወረዳ ፊርማ">@endif</dd>@endif
+            @if($report->approved_at)<dt>ያጸደቀ</dt><dd>{{ $report->approver?->name }} — {{ $report->approved_at->format('Y-m-d H:i') }}@if($report->approved_signature_data)<img class="sig-img" src="{{ $report->approved_signature_data }}" alt="የዞን ፊርማ">@endif</dd>@endif
             @if($report->status === App\Enums\WeeklyPlanStatus::Returned)<dt>የመመለስ ምክንያት</dt><dd>{{ $report->return_reason }}</dd>@endif
         </dl>
     </div>
@@ -25,6 +25,7 @@
                     <strong>{{ $a->actionLabel() }}</strong> — {{ $a->user?->name }}
                     <div class="muted">{{ $a->created_at?->format('Y-m-d H:i') }}</div>
                     @if($a->note)<div>{{ $a->note }}</div>@endif
+                    @if($a->signature_data)<img class="sig-img" src="{{ $a->signature_data }}" alt="ፊርማ">@endif
                 </li>
             @endforeach
         </ul>
@@ -77,6 +78,7 @@
             @csrf
             <label for="note-a">ማስታወሻ (አማራጭ)</label>
             <input id="note-a" type="text" name="note">
+            <x-signature-pad name="signature_data" label="የዞን ማጽደቂያ ፊርማ (አማራጭ)" />
             <div class="actions"><button class="btn" type="submit">✔ አጽድቅ</button></div>
         </form>
     @endcan

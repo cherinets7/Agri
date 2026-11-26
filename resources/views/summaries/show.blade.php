@@ -16,6 +16,9 @@
             <dt>ዋና ሥራዎች</dt><dd>{{ $summary->highlights }}</dd>
             <dt>ችግሮች</dt><dd>{{ $summary->challenges ?: '—' }}</dd>
             <dt>የቀጣይ ሳምንት ዕቅድ</dt><dd>{{ $summary->next_week_plan }}</dd>
+            @if($summary->signature_data)<dt>የባለሙያ ፊርማ</dt><dd><img class="sig-img" src="{{ $summary->signature_data }}" alt="የባለሙያ ፊርማ"></dd>@endif
+            @if($summary->verified_signature_data)<dt>የወረዳ ፊርማ</dt><dd><img class="sig-img" src="{{ $summary->verified_signature_data }}" alt="የወረዳ ፊርማ"></dd>@endif
+            @if($summary->approved_signature_data)<dt>የዞን ፊርማ</dt><dd><img class="sig-img" src="{{ $summary->approved_signature_data }}" alt="የዞን ፊርማ"></dd>@endif
             @if($summary->status === App\Enums\ReportStatus::Returned)<dt>የመመለስ ምክንያት</dt><dd>{{ $summary->return_reason }}</dd>@endif
         </dl>
     </div>
@@ -28,6 +31,7 @@
                     <strong>{{ $a->actionLabel() }}</strong> — {{ $a->user?->name }}
                     <div class="muted">{{ $a->created_at?->format('Y-m-d H:i') }}</div>
                     @if($a->note)<div>{{ $a->note }}</div>@endif
+                    @if($a->signature_data)<img class="sig-img" src="{{ $a->signature_data }}" alt="ፊርማ">@endif
                 </li>
             @endforeach
         </ul>
@@ -50,6 +54,7 @@
         <h2>የወረዳ ማረጋገጫ</h2>
         <form method="POST" action="{{ route('summaries.verify', $summary) }}">@csrf
             <input type="text" name="note" placeholder="ማስታወሻ (አማራጭ)">
+            <x-signature-pad name="signature_data" label="የወረዳ ማረጋገጫ ፊርማ (አማራጭ)" />
             <div class="actions"><button class="btn" type="submit">✔ አረጋግጥ → ወደ ዞን</button></div>
         </form>
     @endcan
@@ -57,6 +62,7 @@
         <h2>የዞን ማጽደቅ</h2>
         <form method="POST" action="{{ route('summaries.approve', $summary) }}">@csrf
             <input type="text" name="note" placeholder="ማስታወሻ (አማራጭ)">
+            <x-signature-pad name="signature_data" label="የዞን ማጽደቂያ ፊርማ (አማራጭ)" />
             <div class="actions"><button class="btn" type="submit">✔ አጽድቅ</button></div>
         </form>
     @endcan

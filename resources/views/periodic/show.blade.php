@@ -25,7 +25,9 @@
                 </dd>
             @endforeach
             <dt>ማስታወሻ</dt><dd>{{ $report->notes ?: '—' }}</dd>
-            @if($report->declared_at)<dt>ማረጋገጫ</dt><dd>{{ $report->user?->name }} — {{ $report->declared_at->format('Y-m-d H:i') }}</dd>@endif
+            @if($report->declared_at)<dt>ማረጋገጫ</dt><dd>{{ $report->user?->name }} — {{ $report->declared_at->format('Y-m-d H:i') }}@if($report->signature_data)<img class="sig-img" src="{{ $report->signature_data }}" alt="የባለሙያ ፊርማ">@endif</dd>@endif
+            @if($report->verified_signature_data)<dt>የወረዳ ፊርማ</dt><dd>{{ $report->verifier?->name }}<img class="sig-img" src="{{ $report->verified_signature_data }}" alt="የወረዳ ፊርማ"></dd>@endif
+            @if($report->approved_signature_data)<dt>የዞን ፊርማ</dt><dd>{{ $report->approver?->name }}<img class="sig-img" src="{{ $report->approved_signature_data }}" alt="የዞን ፊርማ"></dd>@endif
             @if($report->status === App\Enums\ReportStatus::Returned)<dt>የመመለስ ምክንያት</dt><dd>{{ $report->return_reason }}</dd>@endif
         </dl>
     </div>
@@ -38,6 +40,7 @@
                     <strong>{{ $a->actionLabel() }}</strong> — {{ $a->user?->name }}
                     <div class="muted">{{ $a->created_at?->format('Y-m-d H:i') }}</div>
                     @if($a->note)<div>{{ $a->note }}</div>@endif
+                    @if($a->signature_data)<img class="sig-img" src="{{ $a->signature_data }}" alt="ፊርማ">@endif
                 </li>
             @endforeach
         </ul>
@@ -64,6 +67,7 @@
             @csrf
             <label for="note-v">ማስታወሻ (አማራጭ)</label>
             <input id="note-v" type="text" name="note">
+            <x-signature-pad name="signature_data" label="የወረዳ ማረጋገጫ ፊርማ (አማራጭ)" />
             <div class="actions"><button class="btn" type="submit">✔ አረጋግጥ → ወደ ዞን</button></div>
         </form>
     @endcan
@@ -73,6 +77,7 @@
             @csrf
             <label for="note-a">ማስታወሻ (አማራጭ)</label>
             <input id="note-a" type="text" name="note">
+            <x-signature-pad name="signature_data" label="የዞን ማጽደቂያ ፊርማ (አማራጭ)" />
             <div class="actions"><button class="btn" type="submit">✔ አጽድቅ</button></div>
         </form>
     @endcan

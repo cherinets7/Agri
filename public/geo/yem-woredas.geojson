@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "name": "Yem_Zone_Woredas_Schematic",
+  "_todo": "TODO: Replace schematic placeholder polygons with official CSA / OCHA administrative boundary shapefile converted to GeoJSON, matching Location.code (YEM-SKAR, YEM-DSZ, YEM-FOFA, YEM-TOBA).",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "YEM-SKAR",
+        "name_am": "ሳ/ከ/አስ/ር",
+        "name_en": "Sa/Ke/As/R"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[37.46, 7.82], [37.53, 7.82], [37.53, 7.88], [37.46, 7.88], [37.46, 7.82]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "YEM-DSZ",
+        "name_am": "ደ/ሳ/ዙ/ወረዳ",
+        "name_en": "De/Sa/Zu Woreda"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[37.36, 7.72], [37.48, 7.72], [37.46, 7.82], [37.53, 7.82], [37.56, 7.75], [37.62, 7.84], [37.46, 7.93], [37.35, 7.86], [37.36, 7.72]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "YEM-FOFA",
+        "name_am": "ፎፋ ወረዳ",
+        "name_en": "Fofa Woreda"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[37.36, 7.86], [37.46, 7.93], [37.62, 7.84], [37.65, 7.98], [37.50, 8.04], [37.34, 7.97], [37.36, 7.86]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "YEM-TOBA",
+        "name_am": "ቶባ ወረዳ",
+        "name_en": "Toba Woreda"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[37.36, 7.60], [37.60, 7.62], [37.64, 7.76], [37.56, 7.75], [37.48, 7.72], [37.36, 7.72], [37.36, 7.60]]]
+      }
+    }
+  ]
+}

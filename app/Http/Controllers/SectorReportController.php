@@ -12,6 +12,7 @@ use App\Services\SectorAggregation;
 use App\Services\SectorReportWorkflow;
 use App\Support\EthiopianDate;
 use App\Support\Period;
+use App\Support\Signature;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -129,11 +130,12 @@ class SectorReportController extends Controller
             'status' => ReportStatus::Draft,
             'payload' => $validated['payload'],
             'notes' => $validated['notes'],
+            'signature_data' => $validated['signature_data'],
         ]);
         $this->workflow->record($report, $user, 'create', null, ReportStatus::Draft);
 
         if ($request->input('action') === 'submit') {
-            $this->workflow->submit($report, $user);
+            $this->workflow->submit($report, $user, $validated['signature_data']);
 
             return redirect()->route('sectors.show', $report)->with('status', 'የዘርፍ ሪፖርቱ ለወረዳ ተልኳል።');
         }
@@ -175,10 +177,11 @@ class SectorReportController extends Controller
             'fiscal_year' => EthiopianDate::fiscalYear($reportDate),
             'payload' => $validated['payload'],
             'notes' => $validated['notes'],
+            'signature_data' => $validated['signature_data'] ?: $sectorReport->signature_data,
         ]);
 
         if ($request->input('action') === 'submit') {
-            $this->workflow->submit($sectorReport, $request->user());
+            $this->workflow->submit($sectorReport, $request->user(), $sectorReport->signature_data);
 
             return redirect()->route('sectors.show', $sectorReport)->with('status', 'የዘርፍ ሪፖርቱ ለወረዳ ተልኳል።');
         }
@@ -198,7 +201,7 @@ class SectorReportController extends Controller
     public function submit(Request $request, SectorReport $sectorReport): RedirectResponse
     {
         $this->authorize('submit', $sectorReport);
-        $this->workflow->submit($sectorReport, $request->user());
+        $this->workflow->submit($sectorReport, $request->user(), Signature::fromRequest($request));
 
         return redirect()->route('sectors.show', $sectorReport)->with('status', 'የዘርፍ ሪፖርቱ ለወረዳ ተልኳል።');
     }
@@ -206,8 +209,11 @@ class SectorReportController extends Controller
     public function verify(Request $request, SectorReport $sectorReport): RedirectResponse
     {
         $this->authorize('verify', $sectorReport);
-        $note = $request->validate(['note' => ['nullable', 'string', 'max:1000']])['note'] ?? null;
-        $this->workflow->verify($sectorReport, $request->user(), $note);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
+        ]);
+        $this->workflow->verify($sectorReport, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('sectors.show', $sectorReport)->with('status', 'ሪፖርቱ በወረዳ ተረጋግጦ ወደ ዞን ተላልፏል።');
     }
@@ -215,8 +221,11 @@ class SectorReportController extends Controller
     public function approve(Request $request, SectorReport $sectorReport): RedirectResponse
     {
         $this->authorize('approve', $sectorReport);
-        $note = $request->validate(['note' => ['nullable', 'string', 'max:1000']])['note'] ?? null;
-        $this->workflow->approve($sectorReport, $request->user(), $note);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
+        ]);
+        $this->workflow->approve($sectorReport, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('sectors.show', $sectorReport)->with('status', 'ሪፖርቱ በዞን ጸድቋል።');
     }
@@ -236,6 +245,7 @@ class SectorReportController extends Controller
             'report_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:today'],
             'period_type' => ['required', Rule::enum(PeriodGranularity::class)],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'signature_data' => Signature::rules(),
         ];
         $attributes = [
             'report_date' => 'ቀን',
@@ -293,6 +303,7 @@ class SectorReportController extends Controller
             'period_type' => $data['period_type'],
             'payload' => $payload,
             'notes' => $data['notes'] ?? null,
+            'signature_data' => $data['signature_data'] ?? null,
         ];
     }
 }

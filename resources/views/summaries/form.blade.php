@@ -14,15 +14,12 @@
     <div class="card stat"><div class="n">{{ $summary->feedback_avg ? "{$summary->feedback_avg}/5" : '—' }}</div><div class="l">የአርሶ አደር አስተያየት ({{ $summary->feedback_count }})</div></div>
 </div>
 
-<form method="POST" action="{{ $summary->exists ? route('summaries.update', $summary) : route('summaries.store') }}" class="card">
+<form method="POST" action="{{ $summary->exists ? route('summaries.update', $summary) : route('summaries.store') }}" class="card" data-offline-draft>
     @csrf
     @if($summary->exists) @method('PUT') @endif
 
     <div class="row">
-        <div>
-            <label for="week_start">የሳምንቱ መጀመሪያ (ሰኞ)</label>
-            <input id="week_start" type="date" name="week_start" max="{{ today()->toDateString() }}" value="{{ old('week_start', $summary->week_start?->toDateString()) }}" required>
-        </div>
+        <x-ethiopian-date-input name="week_start" id="week_start" label="የሳምንቱ መጀመሪያ (ሰኞ)" :max="today()->toDateString()" :value="old('week_start', $summary->week_start?->toDateString())" :required="true" />
     </div>
 
     <label for="highlights">የሳምንቱ ዋና ዋና ሥራዎች እና ስኬቶች</label>
@@ -33,6 +30,8 @@
 
     <label for="next_week_plan">የሚቀጥለው ሳምንት ዕቅድ</label>
     <textarea id="next_week_plan" name="next_week_plan" required>{{ old('next_week_plan', $summary->next_week_plan) }}</textarea>
+
+    <x-signature-pad name="signature_data" label="የባለሙያ ዲጂታል ፊርማ (አማራጭ)" :existing="$summary->signature_data" />
 
     <div class="actions">
         <button class="btn secondary" type="submit" name="action" value="draft">አስቀምጥ (ረቂቅ)</button>

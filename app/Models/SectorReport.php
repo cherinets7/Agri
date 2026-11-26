@@ -19,6 +19,7 @@ class SectorReport extends Model
         'woreda_verified_by', 'woreda_verified_at',
         'zone_approved_by', 'zone_approved_at',
         'returned_by', 'returned_at', 'return_reason',
+        'signature_data', 'verified_signature_data', 'approved_signature_data',
     ];
 
     protected function casts(): array

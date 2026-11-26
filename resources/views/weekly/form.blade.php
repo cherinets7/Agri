@@ -9,10 +9,7 @@
 
 @unless($report->exists)
     <form method="GET" action="{{ route('weekly.create') }}" class="card filters">
-        <div>
-            <label for="week">ሳምንት (የሳምንቱ ማንኛውም ቀን)</label>
-            <input id="week" type="date" name="week" max="{{ today()->toDateString() }}" value="{{ $report->week_start->toDateString() }}">
-        </div>
+        <x-ethiopian-date-input name="week" id="week" label="ሳምንት (የሳምንቱ ማንኛውም ቀን)" :max="today()->toDateString()" :value="$report->week_start->toDateString()" />
         <div><button class="btn secondary" type="submit">ሳምንት ቀይር</button></div>
     </form>
 @endunless
@@ -23,7 +20,7 @@
     በዚህ ሳምንት የተከናወነውን ብቻ ያስገቡ (ድምሩ ራስ-ሰር ይደመራል)። ባዶ = አልተከናወነም/አልተመዘገበም፤ 0 = ዜሮ።
 </p>
 
-<form method="POST" action="{{ $report->exists ? route('weekly.update', $report) : route('weekly.store') }}">
+<form method="POST" action="{{ $report->exists ? route('weekly.update', $report) : route('weekly.store') }}" data-offline-draft>
     @csrf
     @if($report->exists) @method('PUT') @else <input type="hidden" name="week_start" value="{{ $report->week_start->toDateString() }}"> @endif
 
@@ -54,6 +51,7 @@
     <div class="card">
         <label for="notes">ማስታወሻ (አማራጭ)</label>
         <textarea id="notes" name="notes">{{ old('notes', $report->notes) }}</textarea>
+        <x-signature-pad name="signature_data" label="የወረዳ ዲጂታል ፊርማ (አማራጭ)" :existing="$report->signature_data" />
         <div class="actions">
             <button class="btn secondary" type="submit" name="action" value="draft">አስቀምጥ (ረቂቅ)</button>
             <button class="btn" type="submit" name="action" value="submit" onclick="return confirm('መረጃው ትክክል መሆኑን አረጋግጠዋል? ለዞን ይላካል።')">አረጋግጥና ለዞን ላክ</button>

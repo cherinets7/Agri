@@ -14,7 +14,7 @@
     <div class="errors"><strong>ሪፖርቱ ተመልሷል።</strong> ምክንያት፦ {{ $report->return_reason }}</div>
 @endif
 
-<form method="POST" action="{{ $report->exists ? route('reports.update', $report) : route('reports.store') }}" class="card">
+<form method="POST" action="{{ $report->exists ? route('reports.update', $report) : route('reports.store') }}" class="card" data-offline-draft>
     @csrf
     @if($report->exists) @method('PUT') @endif
 
@@ -31,10 +31,7 @@
             <label>ሪፖርት አድራጊ</label>
             <input type="text" value="{{ $report->user?->name ?? $user->name }}" disabled>
         </div>
-        <div>
-            <label for="report_date">ቀን</label>
-            <input id="report_date" type="date" name="report_date" max="{{ today()->toDateString() }}" value="{{ old('report_date', $report->report_date?->toDateString()) }}" required>
-        </div>
+        <x-ethiopian-date-input name="report_date" id="report_date" label="ቀን" :max="today()->toDateString()" :value="old('report_date', $report->report_date?->toDateString())" :required="true" />
     </div>
 
     <h2>የተገለገሉ አርሶ አደሮች</h2>
@@ -86,6 +83,8 @@
 
     <label for="notes">ማስታወሻ</label>
     <textarea id="notes" name="notes">{{ old('notes', $report->notes) }}</textarea>
+
+    <x-signature-pad name="signature_data" label="የባለሙያ ዲጂታል ፊርማ (አማራጭ)" :existing="$report->signature_data" />
 
     <p class="muted">«ላክ» ሲጫኑ መረጃው ትክክል መሆኑን እንዳረጋገጡ ይመዘገባል (ዲጂታል ማረጋገጫ)።</p>
     <div class="actions">

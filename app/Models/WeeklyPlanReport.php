@@ -14,6 +14,7 @@ class WeeklyPlanReport extends Model
         'woreda_id', 'user_id', 'fiscal_year', 'week_start', 'status', 'notes',
         'declared_at', 'submitted_at', 'approved_by', 'approved_at',
         'returned_by', 'returned_at', 'return_reason',
+        'signature_data', 'approved_signature_data',
     ];
 
     protected function casts(): array

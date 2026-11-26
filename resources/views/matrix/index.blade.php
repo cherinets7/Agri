@@ -25,10 +25,7 @@
             @foreach($years as $y)<option value="{{ $y }}" @selected($y === $year)>{{ $y }}</option>@endforeach
         </select>
     </div>
-    <div>
-        <label for="week">እስከ ሳምንት (የሳምንቱ ማንኛውም ቀን)</label>
-        <input id="week" type="date" name="week" value="{{ $through?->toDateString() }}">
-    </div>
+    <x-ethiopian-date-input name="week" id="week" label="እስከ ሳምንት (የሳምንቱ ማንኛውም ቀን)" :value="$through?->toDateString() ?? ''" />
     <div>
         <label for="mode">እይታ</label>
         <select id="mode" name="mode">

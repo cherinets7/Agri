@@ -8,6 +8,7 @@ use App\Models\ExtensionReport;
 use App\Models\Location;
 use App\Services\ReportWorkflow;
 use App\Support\Period;
+use App\Support\Signature;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -81,7 +82,7 @@ class ExtensionReportController extends Controller
         $this->workflow->record($report, $user, 'create', null, ReportStatus::Draft);
 
         if ($request->input('action') === 'submit') {
-            $this->workflow->submit($report, $user);
+            $this->workflow->submit($report, $user, $data['signature_data'] ?? null);
 
             return redirect()->route('reports.show', $report)->with('status', 'ሪፖርቱ ለወረዳ ተልኳል።');
         }
@@ -111,7 +112,7 @@ class ExtensionReportController extends Controller
         $report->update($this->validated($request, $report));
 
         if ($request->input('action') === 'submit') {
-            $this->workflow->submit($report, $request->user());
+            $this->workflow->submit($report, $request->user(), $report->signature_data);
 
             return redirect()->route('reports.show', $report)->with('status', 'ሪፖርቱ ለወረዳ ተልኳል።');
         }
@@ -130,7 +131,7 @@ class ExtensionReportController extends Controller
     public function submit(Request $request, ExtensionReport $report): RedirectResponse
     {
         $this->authorize('submit', $report);
-        $this->workflow->submit($report, $request->user());
+        $this->workflow->submit($report, $request->user(), Signature::fromRequest($request));
 
         return redirect()->route('reports.show', $report)->with('status', 'ሪፖርቱ ለወረዳ ተልኳል።');
     }
@@ -138,8 +139,11 @@ class ExtensionReportController extends Controller
     public function verify(Request $request, ExtensionReport $report): RedirectResponse
     {
         $this->authorize('verify', $report);
-        $note = $request->validate(['note' => ['nullable', 'string', 'max:1000']])['note'] ?? null;
-        $this->workflow->verify($report, $request->user(), $note);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
+        ]);
+        $this->workflow->verify($report, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('reports.show', $report)->with('status', 'ሪፖርቱ በወረዳ ተረጋግጦ ወደ ዞን ተላልፏል።');
     }
@@ -147,8 +151,11 @@ class ExtensionReportController extends Controller
     public function approve(Request $request, ExtensionReport $report): RedirectResponse
     {
         $this->authorize('approve', $report);
-        $note = $request->validate(['note' => ['nullable', 'string', 'max:1000']])['note'] ?? null;
-        $this->workflow->approve($report, $request->user(), $note);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
+        ]);
+        $this->workflow->approve($report, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('reports.show', $report)->with('status', 'ሪፖርቱ በዞን ጸድቋል።');
     }
@@ -186,6 +193,7 @@ class ExtensionReportController extends Controller
             'techniques.*' => [Rule::in($techniques)],
             'duration_minutes' => ['required', 'integer', 'min:0', 'max:1440'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'signature_data' => Signature::rules(),
         ], [], [
             'report_date' => 'ቀን',
             'farmers_total' => 'ጠቅላላ አርሶ አደር',

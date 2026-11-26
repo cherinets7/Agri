@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Services\ExpertWeeklySummaryWorkflow;
 use App\Services\PlanMatrix;
 use App\Support\EthiopianDate;
+use App\Support\Signature;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -79,11 +80,12 @@ class ExpertWeeklySummaryController extends Controller
             'highlights' => $data['highlights'],
             'challenges' => $data['challenges'] ?? null,
             'next_week_plan' => $data['next_week_plan'],
+            'signature_data' => $data['signature_data'] ?? null,
         ]);
         $this->workflow->record($summary, $user, 'create', null, ReportStatus::Draft);
 
         if ($request->input('action') === 'submit') {
-            $this->workflow->submit($summary, $user);
+            $this->workflow->submit($summary, $user, $data['signature_data'] ?? null);
 
             return redirect()->route('summaries.show', $summary)->with('status', 'ሳምንታዊ ማጠቃለያው ለወረዳ ተልኳል።');
         }
@@ -120,10 +122,11 @@ class ExpertWeeklySummaryController extends Controller
             'highlights' => $data['highlights'],
             'challenges' => $data['challenges'] ?? null,
             'next_week_plan' => $data['next_week_plan'],
+            'signature_data' => ($data['signature_data'] ?? null) ?: $summary->signature_data,
         ]);
 
         if ($request->input('action') === 'submit') {
-            $this->workflow->submit($summary, $request->user());
+            $this->workflow->submit($summary, $request->user(), $summary->signature_data);
 
             return redirect()->route('summaries.show', $summary)->with('status', 'ሳምንታዊ ማጠቃለያው ለወረዳ ተልኳል።');
         }
@@ -142,7 +145,7 @@ class ExpertWeeklySummaryController extends Controller
     public function submit(Request $request, ExpertWeeklySummary $summary): RedirectResponse
     {
         $this->authorize('submit', $summary);
-        $this->workflow->submit($summary, $request->user());
+        $this->workflow->submit($summary, $request->user(), Signature::fromRequest($request));
 
         return redirect()->route('summaries.show', $summary)->with('status', 'ሳምንታዊ ማጠቃለያው ለወረዳ ተልኳል።');
     }
@@ -150,8 +153,11 @@ class ExpertWeeklySummaryController extends Controller
     public function verify(Request $request, ExpertWeeklySummary $summary): RedirectResponse
     {
         $this->authorize('verify', $summary);
-        $note = $request->validate(['note' => ['nullable', 'string', 'max:1000']])['note'] ?? null;
-        $this->workflow->verify($summary, $request->user(), $note);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
+        ]);
+        $this->workflow->verify($summary, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('summaries.show', $summary)->with('status', 'ሳምንታዊ ማጠቃለያው በወረዳ ተረጋግጧል።');
     }
@@ -159,8 +165,11 @@ class ExpertWeeklySummaryController extends Controller
     public function approve(Request $request, ExpertWeeklySummary $summary): RedirectResponse
     {
         $this->authorize('approve', $summary);
-        $note = $request->validate(['note' => ['nullable', 'string', 'max:1000']])['note'] ?? null;
-        $this->workflow->approve($summary, $request->user(), $note);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+            'signature_data' => Signature::rules(),
+        ]);
+        $this->workflow->approve($summary, $request->user(), $data['note'] ?? null, $data['signature_data'] ?? null);
 
         return redirect()->route('summaries.show', $summary)->with('status', 'ሳምንታዊ ማጠቃለያው በዞን ጸድቋል።');
     }
@@ -189,6 +198,7 @@ class ExpertWeeklySummaryController extends Controller
             'highlights' => ['required', 'string', 'max:3000'],
             'challenges' => ['nullable', 'string', 'max:2000'],
             'next_week_plan' => ['required', 'string', 'max:3000'],
+            'signature_data' => Signature::rules(),
         ], [], [
             'week_start' => 'የሳምንቱ መጀመሪያ',
             'highlights' => 'የሳምንቱ ዋና ሥራዎች',

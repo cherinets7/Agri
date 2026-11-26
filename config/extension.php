@@ -16,6 +16,9 @@ return [
     // ISO weekdays that are working days (1 = Monday ... 7 = Sunday).
     'work_days' => array_map('intval', explode(',', env('EXT_WORK_DAYS', '1,2,3,4,5'))),
 
+    // Send email reminders alongside in-app notifications when mailer is configured.
+    'email_reminders_enabled' => filter_var(env('EXT_EMAIL_REMINDERS', true), FILTER_VALIDATE_BOOL),
+
     'service_types' => [
         'crop' => 'ሰብል (በልግ/መኸር)',
         'irrigation' => 'መስኖ',

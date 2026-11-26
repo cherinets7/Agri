@@ -3,11 +3,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#2f7d32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>@yield('title', 'ዳሽቦርድ') · {{ config('app.name') }}</title>
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <link rel="icon" href="{{ asset('icons/icon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192.png') }}">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body>
+<div id="offline-banner">ኢንተርኔት ተቋርጧል — የተሞሉ ረቂቆች በመሣሪያዎ ላይ በጊዜያዊነት ይቀመጣሉ።</div>
 @auth
+@php($unreadNotifs = auth()->user()->unreadNotifications()->count())
 <header class="top">
     <div class="wrap">
         <a class="brand" href="{{ route('dashboard') }}">🌾 የየም ዞን ግብርና ክትትል</a>
@@ -26,6 +33,7 @@
             @can('view-matrix')
                 <a href="{{ route('matrix.index') }}" @class(['active' => request()->routeIs('matrix.*')])>ሳምንታዊ ማትሪክስ</a>
                 <a href="{{ route('weekly.index') }}" @class(['active' => request()->routeIs('weekly.*')])>ሳምንታዊ ክንውን</a>
+                <a href="{{ route('map.index') }}" @class(['active' => request()->routeIs('map.*')])>ካርታ</a>
             @endcan
             @can('manage-plan')
                 <a href="{{ route('plan.edit') }}" @class(['active' => request()->routeIs('plan.*')])>ዕቅድ</a>
@@ -34,6 +42,9 @@
                 <a href="{{ route('users.index') }}" @class(['active' => request()->routeIs('users.*')])>ተጠቃሚዎች</a>
                 <a href="{{ route('locations.index') }}" @class(['active' => request()->routeIs('locations.*')])>አካባቢዎች</a>
             @endif
+            <a href="{{ route('notifications.index') }}" @class(['active' => request()->routeIs('notifications.*')])>
+                🔔 ማሳሰቢያ @if($unreadNotifs > 0)<span class="notif-badge">{{ $unreadNotifs }}</span>@endif
+            </a>
         </nav>
         <div class="who">
             <span>{{ auth()->user()->name }} · {{ auth()->user()->role->label() }} ({{ auth()->user()->location?->name_am }})</span>
@@ -51,5 +62,6 @@
     @endif
     @yield('content')
 </main>
+<script src="{{ asset('js/agri-ui.js') }}" defer></script>
 </body>
 </html>

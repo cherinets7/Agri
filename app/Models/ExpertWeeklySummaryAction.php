@@ -9,7 +9,7 @@ class ExpertWeeklySummaryAction extends Model
 {
     public $timestamps = false;
 
-    protected $fillable = ['expert_weekly_summary_id', 'user_id', 'action', 'from_status', 'to_status', 'note', 'created_at'];
+    protected $fillable = ['expert_weekly_summary_id', 'user_id', 'action', 'from_status', 'to_status', 'note', 'signature_data', 'created_at'];
 
     protected function casts(): array
     {

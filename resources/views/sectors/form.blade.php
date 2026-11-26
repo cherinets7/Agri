@@ -9,7 +9,7 @@
     <div class="errors"><strong>ሪፖርቱ ተመልሷል።</strong> ምክንያት፦ {{ $report->return_reason }}</div>
 @endif
 
-<form method="POST" action="{{ $report->exists ? route('sectors.update', $report) : route('sectors.store', $sectorType->value) }}" class="card">
+<form method="POST" action="{{ $report->exists ? route('sectors.update', $report) : route('sectors.store', $sectorType->value) }}" class="card" data-offline-draft>
     @csrf
     @if($report->exists) @method('PUT') @endif
 
@@ -18,10 +18,7 @@
             <label>ቀበሌ / ወረዳ</label>
             <input type="text" value="{{ ($report->location ?? $user->location)?->name_am }} / {{ ($report->location ?? $user->location)?->parent?->name_am }}" disabled>
         </div>
-        <div>
-            <label for="report_date">ቀን</label>
-            <input id="report_date" type="date" name="report_date" max="{{ today()->toDateString() }}" value="{{ old('report_date', $report->report_date?->toDateString()) }}" required>
-        </div>
+        <x-ethiopian-date-input name="report_date" id="report_date" label="ቀን" :max="today()->toDateString()" :value="old('report_date', $report->report_date?->toDateString())" :required="true" />
         <div>
             <label for="period_type">የሪፖርት ጊዜ</label>
             <select id="period_type" name="period_type" required>
@@ -58,6 +55,8 @@
 
     <label for="notes">ማስታወሻ (አማራጭ)</label>
     <textarea id="notes" name="notes">{{ old('notes', $report->notes) }}</textarea>
+
+    <x-signature-pad name="signature_data" label="የባለሙያ ዲጂታል ፊርማ (አማራጭ)" :existing="$report->signature_data" />
 
     <div class="actions">
         <button class="btn secondary" type="submit" name="action" value="draft">አስቀምጥ (ረቂቅ)</button>
