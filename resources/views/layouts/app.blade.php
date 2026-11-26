@@ -14,6 +14,7 @@
         <nav>
             <a href="{{ route('dashboard') }}" @class(['active' => request()->routeIs('dashboard')])>ዳሽቦርድ</a>
             <a href="{{ route('reports.index') }}" @class(['active' => request()->routeIs('reports.index', 'reports.show', 'reports.edit')])>ሪፖርቶች</a>
+            <a href="{{ route('periodic.hub') }}" @class(['active' => request()->routeIs('periodic.*')])>ሪፖርቶች (#2–#8)</a>
             @can('create', App\Models\ExtensionReport::class)
                 <a href="{{ route('reports.create') }}" @class(['active' => request()->routeIs('reports.create')])>+ አዲስ ዕለታዊ ሪፖርት</a>
             @endcan

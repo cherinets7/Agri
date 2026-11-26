@@ -3,16 +3,21 @@
 namespace Database\Seeders;
 
 use App\Enums\Level;
+use App\Enums\PeriodGranularity;
+use App\Enums\PeriodicReportType;
 use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\WeeklyPlanStatus;
 use App\Models\ExtensionReport;
+use App\Models\InputDispatch;
 use App\Models\Location;
+use App\Models\PeriodicReport;
 use App\Models\PlanActivity;
 use App\Models\PlanTarget;
 use App\Models\User;
 use App\Models\WeeklyPlanReport;
 use App\Services\ExtensionPerformance;
+use App\Services\PeriodicReportWorkflow;
 use App\Services\PlanMatrix;
 use App\Services\ReportWorkflow;
 use App\Services\WeeklyPlanWorkflow;
@@ -49,6 +54,7 @@ class DemoDataSeeder extends Seeder
 
         $this->seedReports($experts);
         $this->seedWeeklyMatrix($zone);
+        $this->seedPeriodicReports($zone, $experts);
     }
 
     /** @param  list<User>  $experts */
@@ -170,6 +176,68 @@ class DemoDataSeeder extends Seeder
             $workflow->submit($report, $woredaUser);
             if ($zoneUser) {
                 $workflow->approve($report, $zoneUser);
+            }
+        }
+    }
+
+    /** @param  list<User>  $experts */
+    private function seedPeriodicReports(Location $zone, array $experts): void
+    {
+        if (PeriodicReport::query()->exists()) {
+            return;
+        }
+
+        $workflow = app(PeriodicReportWorkflow::class);
+        $zoneUser = User::where('role', Role::Zone->value)->first();
+        $date = today()->subDays(2);
+        $fy = EthiopianDate::fiscalYear($date);
+
+        if ($zoneUser) {
+            foreach (Location::ofLevel(Level::Woreda)->get() as $woreda) {
+                InputDispatch::create([
+                    'from_location_id' => $zone->id,
+                    'to_location_id' => $woreda->id,
+                    'user_id' => $zoneUser->id,
+                    'dispatch_date' => $date->copy()->subDays(3),
+                    'fiscal_year' => $fy,
+                    'input_type' => 'fertilizer',
+                    'unit' => 'quintal',
+                    'quantity' => 450,
+                ]);
+            }
+        }
+
+        $samples = [
+            PeriodicReportType::CropArea->value => ['season' => 'meher', 'maize_ha' => 120.5, 'wheat_ha' => 85.0, 'barley_ha' => 42.5, 'other_ha' => 15.0, 'total_ha' => 263.0],
+            PeriodicReportType::FarmerCounts->value => ['households_total' => 520, 'sowed_farmers' => 460, 'unsowed_farmers' => 60, 'female_farmers' => 140, 'youth_farmers' => 190],
+            PeriodicReportType::FertilizerWarehouse->value => ['fertilizer_type' => 'combined', 'stock_quintal' => 180.0, 'distributed_quintal' => 135.0, 'remaining_quintal' => 45.0],
+            PeriodicReportType::AgriStaff->value => ['sector' => 'all', 'degree_count' => 3, 'diploma_count' => 4, 'other_count' => 1, 'female_staff' => 3, 'total_staff' => 8],
+            PeriodicReportType::FarmerTraining->value => ['ftc_count' => 2, 'sessions_count' => 4, 'trainees_total' => 95, 'female_trainees' => 34, 'youth_trainees' => 41, 'topic' => 'የመስመር ዘርና ማዳበሪያ አጠቃቀም'],
+            PeriodicReportType::ZoneInputs->value => ['input_type' => 'fertilizer', 'unit' => 'quintal', 'woreda_dispatched' => 120.0, 'kebele_received' => 115.0, 'farmer_distributed' => 108.0, 'beneficiary_farmers' => 145],
+            PeriodicReportType::SeedSupply->value => ['maize_quintal' => 24.5, 'wheat_quintal' => 18.0, 'barley_quintal' => 12.0, 'other_quintal' => 4.0, 'total_quintal' => 58.5, 'beneficiary_farmers' => 110],
+        ];
+
+        foreach (array_slice($experts, 0, 6) as $i => $expert) {
+            $woredaUser = User::where('role', Role::Woreda->value)->where('location_id', $expert->location->parent_id)->first();
+            foreach ($samples as $type => $payload) {
+                $r = PeriodicReport::create([
+                    'report_type' => $type,
+                    'period_type' => PeriodGranularity::Weekly,
+                    'report_date' => $date,
+                    'fiscal_year' => $fy,
+                    'user_id' => $expert->id,
+                    'location_id' => $expert->location_id,
+                    'status' => ReportStatus::Draft,
+                    'payload' => $payload,
+                ]);
+                $workflow->record($r, $expert, 'create', null, ReportStatus::Draft);
+                $workflow->submit($r, $expert);
+                if ($i % 2 === 0 && $woredaUser) {
+                    $workflow->verify($r, $woredaUser);
+                }
+                if ($i === 0 && $zoneUser) {
+                    $workflow->approve($r, $zoneUser);
+                }
             }
         }
     }

@@ -88,6 +88,13 @@
     </div>
 @endunless
 
+<div class="card">
+    <strong>{{ $periodicPending['label'] }}፦</strong> {{ $periodicPending['count'] }}
+    <div class="actions">
+        <a class="btn sm" href="{{ route('periodic.hub') }}">ሪፖርቶች (#2–#8) ክፈት</a>
+    </div>
+</div>
+
 @if($weekly)
     <h2>ሳምንታዊ ዕቅድ/ክንውን ማትሪክስ</h2>
     <div class="grid cols-2">

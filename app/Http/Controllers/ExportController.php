@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PeriodicReportType;
 use App\Exports\MatrixExport;
 use App\Exports\PerformanceExport;
+use App\Exports\PeriodicReportsExport;
 use App\Exports\ReportsExport;
 use App\Services\ExtensionPerformance;
+use App\Services\PeriodicAggregation;
 use App\Services\PlanMatrix;
 use App\Support\Period;
 use Illuminate\Http\Request;
@@ -38,5 +41,21 @@ class ExportController extends Controller
         $week = $data['through']?->toDateString() ?? 'ዕቅድ';
 
         return Excel::download(new MatrixExport($data, $data['detail']), "ሳምንታዊ-ማትሪክስ-{$data['year']}-{$suffix}-{$week}.xlsx");
+    }
+
+    public function periodic(Request $request, string $type, PeriodicAggregation $aggregation)
+    {
+        $reportType = PeriodicReportType::from($type);
+        $user = $request->user();
+        $period = Period::fromRequest($request, 'last30');
+        $woredaId = $user->isWoreda() ? $user->location_id : ($user->isZone() ? ($request->integer('woreda') ?: null) : null);
+
+        $query = PeriodicReportController::filteredQuery($request, $reportType, $period);
+        $summary = $aggregation->summarize($user, $reportType, $period->from, $period->to, $woredaId, $request->boolean('approved'));
+
+        return Excel::download(
+            new PeriodicReportsExport($reportType, $query, $summary),
+            "ሪፖርት-{$reportType->number()}-{$period->from->toDateString()}_{$period->to->toDateString()}.xlsx",
+        );
     }
 }

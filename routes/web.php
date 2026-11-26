@@ -1,10 +1,13 @@
 <?php
 
+use App\Enums\PeriodicReportType;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ExtensionReportController;
+use App\Http\Controllers\InputDispatchController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\PeriodicReportController;
 use App\Http\Controllers\PlanMatrixController;
 use App\Http\Controllers\PlanStructureController;
 use App\Http\Controllers\PlanTargetController;
@@ -38,6 +41,27 @@ Route::middleware('auth')->group(function () {
     Route::get('/exports/reports', [ExportController::class, 'reports'])->name('exports.reports');
     Route::get('/matrix', [PlanMatrixController::class, 'index'])->name('matrix.index');
     Route::get('/exports/matrix', [ExportController::class, 'matrix'])->name('exports.matrix');
+
+    $periodicTypes = array_column(PeriodicReportType::cases(), 'value');
+    Route::get('/periodic-reports', [PeriodicReportController::class, 'hub'])->name('periodic.hub');
+    Route::get('/periodic-reports/type/{type}', [PeriodicReportController::class, 'index'])
+        ->whereIn('type', $periodicTypes)->name('periodic.index');
+    Route::get('/periodic-reports/type/{type}/create', [PeriodicReportController::class, 'create'])
+        ->whereIn('type', $periodicTypes)->name('periodic.create');
+    Route::post('/periodic-reports/type/{type}', [PeriodicReportController::class, 'store'])
+        ->whereIn('type', $periodicTypes)->name('periodic.store');
+    Route::get('/periodic-reports/{periodicReport}', [PeriodicReportController::class, 'show'])->name('periodic.show');
+    Route::get('/periodic-reports/{periodicReport}/edit', [PeriodicReportController::class, 'edit'])->name('periodic.edit');
+    Route::put('/periodic-reports/{periodicReport}', [PeriodicReportController::class, 'update'])->name('periodic.update');
+    Route::delete('/periodic-reports/{periodicReport}', [PeriodicReportController::class, 'destroy'])->name('periodic.destroy');
+    Route::post('/periodic-reports/{periodicReport}/submit', [PeriodicReportController::class, 'submit'])->name('periodic.submit');
+    Route::post('/periodic-reports/{periodicReport}/verify', [PeriodicReportController::class, 'verify'])->name('periodic.verify');
+    Route::post('/periodic-reports/{periodicReport}/approve', [PeriodicReportController::class, 'approve'])->name('periodic.approve');
+    Route::post('/periodic-reports/{periodicReport}/return', [PeriodicReportController::class, 'return'])->name('periodic.return');
+    Route::get('/exports/periodic/{type}', [ExportController::class, 'periodic'])
+        ->whereIn('type', $periodicTypes)->name('exports.periodic');
+    Route::post('/input-dispatches', [InputDispatchController::class, 'store'])->name('dispatches.store');
+    Route::delete('/input-dispatches/{dispatch}', [InputDispatchController::class, 'destroy'])->name('dispatches.destroy');
 
     Route::get('/weekly-plan', [WeeklyPlanReportController::class, 'index'])->name('weekly.index');
     Route::get('/weekly-plan/create', [WeeklyPlanReportController::class, 'create'])->name('weekly.create');

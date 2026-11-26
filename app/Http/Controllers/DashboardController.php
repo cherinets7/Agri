@@ -10,6 +10,7 @@ use App\Models\ExtensionReport;
 use App\Models\Location;
 use App\Models\WeeklyPlanReport;
 use App\Services\ExtensionPerformance;
+use App\Services\PeriodicAggregation;
 use App\Services\PlanMatrix;
 use App\Support\Period;
 use Illuminate\Http\Request;
@@ -72,6 +73,7 @@ class DashboardController extends Controller
 
         return view('dashboard', [
             'weekly' => $weekly,
+            'periodicPending' => app(PeriodicAggregation::class)->pendingCounts($user),
             'period' => $period,
             'woredas' => $woredas,
             'woredaId' => $woredaId,
