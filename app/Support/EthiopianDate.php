@@ -63,6 +63,43 @@ class EthiopianDate
         return [$from, $nextFrom->subDay()];
     }
 
+    public static function daysInMonth(int $year, int $month): int
+    {
+        if ($month < 13) {
+            return 30;
+        }
+
+        return ($year % 4 === 3) ? 6 : 5;
+    }
+
+    /** @return array{0:Carbon,1:Carbon} */
+    public static function monthRange(int $etYear, int $etMonth): array
+    {
+        $from = self::toGregorian($etYear, $etMonth, 1);
+        $to = self::toGregorian($etYear, $etMonth, self::daysInMonth($etYear, $etMonth));
+
+        return [$from, $to];
+    }
+
+    /**
+     * Ethiopian fiscal quarters:
+     * Q1: ሐምሌ–መስከረም (11,12,13,1 of fy-1..fy)
+     * Q2: ጥቅምት–ታህሳስ (2,3,4 of fy)
+     * Q3: ጥር–መጋቢት (5,6,7 of fy)
+     * Q4: ሚያዚያ–ሰኔ (8,9,10 of fy)
+     *
+     * @return array{0:Carbon,1:Carbon,2:string} [from, to, label]
+     */
+    public static function fiscalQuarterRange(int $fiscalYear, int $quarter): array
+    {
+        return match ($quarter) {
+            1 => [self::toGregorian($fiscalYear - 1, 11, 1), self::toGregorian($fiscalYear, 1, 30), '1ኛ ሩብ (ሐምሌ–መስከረም)'],
+            2 => [self::toGregorian($fiscalYear, 2, 1), self::toGregorian($fiscalYear, 4, 30), '2ኛ ሩብ (ጥቅምት–ታህሳስ)'],
+            3 => [self::toGregorian($fiscalYear, 5, 1), self::toGregorian($fiscalYear, 7, 30), '3ኛ ሩብ (ጥር–መጋቢት)'],
+            default => [self::toGregorian($fiscalYear, 8, 1), self::toGregorian($fiscalYear, 10, 30), '4ኛ ሩብ (ሚያዚያ–ሰኔ)'],
+        };
+    }
+
     public static function format(?CarbonInterface $date): string
     {
         if (! $date) {

@@ -9,7 +9,9 @@ use App\Enums\ReportStatus;
 use App\Enums\Role;
 use App\Enums\SectorType;
 use App\Enums\WeeklyPlanStatus;
+use App\Models\ExpertWeeklySummary;
 use App\Models\ExtensionReport;
+use App\Models\FarmerFeedback;
 use App\Models\InputDispatch;
 use App\Models\Location;
 use App\Models\PeriodicReport;
@@ -18,6 +20,7 @@ use App\Models\PlanTarget;
 use App\Models\SectorReport;
 use App\Models\User;
 use App\Models\WeeklyPlanReport;
+use App\Services\ExpertWeeklySummaryWorkflow;
 use App\Services\ExtensionPerformance;
 use App\Services\PeriodicReportWorkflow;
 use App\Services\PlanMatrix;
@@ -59,6 +62,7 @@ class DemoDataSeeder extends Seeder
         $this->seedWeeklyMatrix($zone);
         $this->seedPeriodicReports($zone, $experts);
         $this->seedSectorReports($experts);
+        $this->seedFeedbackAndSummaries($experts);
     }
 
     /** @param  list<User>  $experts */
@@ -289,6 +293,55 @@ class DemoDataSeeder extends Seeder
                 if ($i === 0 && $zoneUser) {
                     $workflow->approve($r, $zoneUser);
                 }
+            }
+        }
+    }
+
+    /** @param  list<User>  $experts */
+    private function seedFeedbackAndSummaries(array $experts): void
+    {
+        if (FarmerFeedback::query()->exists()) {
+            return;
+        }
+
+        $summaryWorkflow = app(ExpertWeeklySummaryWorkflow::class);
+        $zoneUser = User::where('role', Role::Zone->value)->first();
+        $weekStart = PlanMatrix::weekStart(today()->subWeek());
+
+        foreach (array_slice($experts, 0, 5) as $i => $expert) {
+            $expert->ensureFeedbackToken();
+            $woredaUser = User::where('role', Role::Woreda->value)->where('location_id', $expert->location->parent_id)->first();
+
+            FarmerFeedback::create([
+                'expert_id' => $expert->id,
+                'location_id' => $expert->location_id,
+                'feedback_date' => $weekStart->copy()->addDays(2),
+                'rating' => ($i % 2 === 0) ? 5 : 4,
+                'service_type' => 'crop',
+                'farmer_name' => 'አቶ በቀለ (ናሙና)',
+                'comment' => 'በወቅቱ የማሳ ምክርና የዘር ድጋፍ አግኝተናል።',
+                'channel' => 'qr',
+            ]);
+
+            $metrics = $summaryWorkflow->computeMetrics($expert, $weekStart);
+            $summary = ExpertWeeklySummary::create([
+                'user_id' => $expert->id,
+                'location_id' => $expert->location_id,
+                'week_start' => $weekStart,
+                'fiscal_year' => EthiopianDate::fiscalYear($weekStart),
+                'status' => ReportStatus::Draft,
+                ...$metrics,
+                'highlights' => 'የመስመር ዘር እና ማዳበሪያ አጠቃቀም ስልጠናና የቤት ለቤት ጉብኝት ተከናውኗል።',
+                'challenges' => 'የትራንስፖርት እጥረት በሩቅ መንደሮች',
+                'next_week_plan' => 'የቀሩ አርሶ አደሮችን መጎብኘትና ክትትል ማድረግ።',
+            ]);
+            $summaryWorkflow->record($summary, $expert, 'create', null, ReportStatus::Draft);
+            $summaryWorkflow->submit($summary, $expert);
+            if ($i % 2 === 0 && $woredaUser) {
+                $summaryWorkflow->verify($summary, $woredaUser);
+            }
+            if ($i === 0 && $zoneUser) {
+                $summaryWorkflow->approve($summary, $zoneUser);
             }
         }
     }

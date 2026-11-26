@@ -2,10 +2,14 @@
 
 use App\Enums\PeriodicReportType;
 use App\Enums\SectorType;
+use App\Http\Controllers\AnnualReportController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpertWeeklySummaryController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ExtensionReportController;
+use App\Http\Controllers\FarmerFeedbackController;
 use App\Http\Controllers\InputDispatchController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\PeriodicReportController;
@@ -23,6 +27,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 });
+
+Route::get('/feedback/qr/{token}', [FarmerFeedbackController::class, 'publicForm'])->name('feedback.public');
+Route::post('/feedback/qr/{token}', [FarmerFeedbackController::class, 'publicStore'])
+    ->middleware('throttle:30,1')->name('feedback.public.store');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -83,6 +91,28 @@ Route::middleware('auth')->group(function () {
     Route::post('/sector-reports/{sectorReport}/return', [SectorReportController::class, 'return'])->name('sectors.return');
     Route::get('/exports/sectors/{sector}', [ExportController::class, 'sector'])
         ->whereIn('sector', $sectorTypes)->name('exports.sectors');
+
+    Route::get('/feedback', [FarmerFeedbackController::class, 'index'])->name('feedback.index');
+    Route::get('/feedback/create', [FarmerFeedbackController::class, 'create'])->name('feedback.create');
+    Route::post('/feedback', [FarmerFeedbackController::class, 'store'])->name('feedback.store');
+    Route::get('/feedback/qr-card/{expert?}', [FarmerFeedbackController::class, 'qrCard'])->name('feedback.qr-card');
+
+    Route::get('/weekly-summaries', [ExpertWeeklySummaryController::class, 'index'])->name('summaries.index');
+    Route::get('/weekly-summaries/create', [ExpertWeeklySummaryController::class, 'create'])->name('summaries.create');
+    Route::post('/weekly-summaries', [ExpertWeeklySummaryController::class, 'store'])->name('summaries.store');
+    Route::get('/weekly-summaries/{summary}', [ExpertWeeklySummaryController::class, 'show'])->name('summaries.show');
+    Route::get('/weekly-summaries/{summary}/edit', [ExpertWeeklySummaryController::class, 'edit'])->name('summaries.edit');
+    Route::put('/weekly-summaries/{summary}', [ExpertWeeklySummaryController::class, 'update'])->name('summaries.update');
+    Route::delete('/weekly-summaries/{summary}', [ExpertWeeklySummaryController::class, 'destroy'])->name('summaries.destroy');
+    Route::post('/weekly-summaries/{summary}/submit', [ExpertWeeklySummaryController::class, 'submit'])->name('summaries.submit');
+    Route::post('/weekly-summaries/{summary}/verify', [ExpertWeeklySummaryController::class, 'verify'])->name('summaries.verify');
+    Route::post('/weekly-summaries/{summary}/approve', [ExpertWeeklySummaryController::class, 'approve'])->name('summaries.approve');
+    Route::post('/weekly-summaries/{summary}/return', [ExpertWeeklySummaryController::class, 'return'])->name('summaries.return');
+
+    Route::get('/comparisons', ComparisonController::class)->name('comparisons.index');
+    Route::get('/annual-report', [AnnualReportController::class, 'index'])->name('annual.index');
+    Route::get('/exports/annual/excel', [AnnualReportController::class, 'excel'])->name('exports.annual.excel');
+    Route::get('/exports/annual/pdf', [AnnualReportController::class, 'pdf'])->name('exports.annual.pdf');
 
     Route::get('/weekly-plan', [WeeklyPlanReportController::class, 'index'])->name('weekly.index');
     Route::get('/weekly-plan/create', [WeeklyPlanReportController::class, 'create'])->name('weekly.create');

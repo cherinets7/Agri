@@ -16,6 +16,10 @@
             <a href="{{ route('reports.index') }}" @class(['active' => request()->routeIs('reports.index', 'reports.show', 'reports.edit')])>ሪፖርቶች</a>
             <a href="{{ route('periodic.hub') }}" @class(['active' => request()->routeIs('periodic.*')])>ሪፖርቶች (#2–#8)</a>
             <a href="{{ route('sectors.hub') }}" @class(['active' => request()->routeIs('sectors.*')])>የዘርፍ ቅጾች</a>
+            <a href="{{ route('summaries.index') }}" @class(['active' => request()->routeIs('summaries.*')])>ሳምንታዊ ማጠቃለያ</a>
+            <a href="{{ route('feedback.index') }}" @class(['active' => request()->routeIs('feedback.*')])>አስተያየት (QR)</a>
+            <a href="{{ route('comparisons.index') }}" @class(['active' => request()->routeIs('comparisons.*')])>ንጽጽር</a>
+            <a href="{{ route('annual.index') }}" @class(['active' => request()->routeIs('annual.*')])>ዓመታዊ ሪፖርት</a>
             @can('create', App\Models\ExtensionReport::class)
                 <a href="{{ route('reports.create') }}" @class(['active' => request()->routeIs('reports.create')])>+ አዲስ ዕለታዊ ሪፖርት</a>
             @endcan

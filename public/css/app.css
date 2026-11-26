@@ -67,3 +67,8 @@ dl.kv dd{margin:0}
 .matrix thead th{vertical-align:middle}
 .goal-head{background:#f0f4ef}
 table input[type=number],table input[type=text],table select{padding:.3rem .45rem}
+.bar-track{background:#e7ece7;border-radius:6px;height:12px;overflow:hidden;min-width:90px}
+.bar-fill{background:var(--brand);height:100%}
+.bar-fill.prev{background:#9eb8a0}
+.stars{color:#d97706;letter-spacing:.05em}
+.sig-pad{border:1px dashed #93a395;border-radius:8px;background:#fcfdfc;touch-action:none;max-width:100%;display:block}
