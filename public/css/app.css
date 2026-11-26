@@ -1,0 +1,63 @@
+:root{--bg:#f4f6f3;--card:#fff;--ink:#1c2a22;--muted:#5f6f66;--brand:#2f7d32;--brand-d:#1f5a23;--line:#dfe5df;--red:#c62828;--amber:#b26a00;--green:#2e7d32;--blue:#1565c0;--gray:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Ethiopic","Abyssinica SIL","Nyala",system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:16px}
+a{color:var(--brand-d)}
+header.top{background:var(--brand);color:#fff}
+header.top .wrap{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1.25rem;padding:.6rem 1rem}
+header.top .brand{font-weight:700;font-size:1.1rem;color:#fff;text-decoration:none}
+header.top nav{display:flex;flex-wrap:wrap;gap:.25rem .9rem;flex:1}
+header.top nav a{color:#e8f5e9;text-decoration:none;padding:.2rem .1rem;border-bottom:2px solid transparent}
+header.top nav a.active,header.top nav a:hover{border-bottom-color:#fff;color:#fff}
+header.top .who{font-size:.85rem;display:flex;gap:.6rem;align-items:center}
+header.top .who button{background:transparent;border:1px solid #cfe8d1;color:#fff;border-radius:6px;padding:.2rem .6rem;cursor:pointer}
+main{max-width:1180px;margin:0 auto;padding:1rem}
+h1{font-size:1.45rem;margin:.2rem 0 1rem}
+h2{font-size:1.15rem;margin:1.2rem 0 .6rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1rem;margin-bottom:1rem}
+.grid{display:grid;gap:.8rem}
+.grid.cols-4{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.grid.cols-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.stat .n{font-size:1.8rem;font-weight:700}
+.stat .l{color:var(--muted);font-size:.9rem}
+.muted{color:var(--muted)}
+.flash{background:#e8f5e9;border:1px solid #a5d6a7;color:#1b5e20;padding:.6rem .9rem;border-radius:8px;margin-bottom:1rem}
+.errors{background:#ffebee;border:1px solid #ef9a9a;color:#b71c1c;padding:.6rem .9rem;border-radius:8px;margin-bottom:1rem}
+.errors ul{margin:.2rem 0 0 1.1rem;padding:0}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#f0f4ef;font-weight:600;white-space:nowrap}
+.table-wrap{overflow-x:auto}
+td.num,th.num{text-align:right;white-space:nowrap}
+.badge{display:inline-block;padding:.1rem .55rem;border-radius:999px;font-size:.8rem;font-weight:600;white-space:nowrap}
+.badge.red{background:#ffebee;color:var(--red)}
+.badge.amber{background:#fff3e0;color:var(--amber)}
+.badge.green{background:#e8f5e9;color:var(--green)}
+.badge.blue{background:#e3f2fd;color:var(--blue)}
+.badge.gray{background:#eceff1;color:var(--gray)}
+label{display:block;font-weight:600;margin:.7rem 0 .2rem}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],select,textarea{width:100%;padding:.5rem .6rem;border:1px solid #b9c4bb;border-radius:8px;font:inherit;background:#fff}
+textarea{min-height:90px}
+.checks{display:flex;flex-wrap:wrap;gap:.4rem 1.1rem}
+.checks label{font-weight:400;margin:0;display:flex;gap:.35rem;align-items:center}
+.row{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.btn{display:inline-block;background:var(--brand);color:#fff;border:0;border-radius:8px;padding:.5rem 1rem;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--brand-d)}
+.btn.secondary{background:#fff;color:var(--brand-d);border:1px solid var(--brand)}
+.btn.danger{background:var(--red)}
+.btn.warn{background:var(--amber)}
+.btn.sm{padding:.25rem .65rem;font-size:.88rem}
+.actions{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:1rem}
+.filters{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end;margin-bottom:1rem}
+.filters>div{min-width:140px}
+.filters label{margin-top:0}
+.presets a{margin-right:.7rem}
+dl.kv{display:grid;grid-template-columns:max-content 1fr;gap:.3rem 1rem;margin:0}
+dl.kv dt{color:var(--muted)}
+dl.kv dd{margin:0}
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{border-left:3px solid var(--brand);padding:.1rem 0 .7rem .8rem;margin-left:.3rem}
+.login{max-width:420px;margin:8vh auto}
+.pager{margin-top:.8rem}
+.pager nav svg{width:1rem;height:1rem}
+.pager nav>div:first-child{display:none}
+@media (max-width:600px){main{padding:.6rem}h1{font-size:1.25rem}th,td{padding:.4rem}}
