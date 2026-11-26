@@ -3,6 +3,7 @@
 use App\Enums\PeriodicReportType;
 use App\Enums\SectorType;
 use App\Http\Controllers\AnnualReportController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ComparisonController;
 use App\Http\Controllers\DashboardController;
@@ -11,10 +12,12 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ExtensionReportController;
 use App\Http\Controllers\FarmerFeedbackController;
 use App\Http\Controllers\InputDispatchController;
+use App\Http\Controllers\KebeleWeeklyController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PeriodicReportController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PlanMatrixController;
 use App\Http\Controllers\PlanStructureController;
 use App\Http\Controllers\PlanTargetController;
@@ -145,6 +148,14 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/locations', [LocationController::class, 'index'])->name('locations.index');
     Route::post('/locations', [LocationController::class, 'store'])->name('locations.store');
+    Route::put('/locations/{location}', [LocationController::class, 'update'])->name('locations.update');
+
+    Route::get('/kebele-weekly', [KebeleWeeklyController::class, 'edit'])->name('kebele-weekly.edit');
+    Route::put('/kebele-weekly', [KebeleWeeklyController::class, 'update'])->name('kebele-weekly.update');
+
+    Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
+    Route::get('/admin/permissions', [PermissionController::class, 'edit'])->name('permissions.edit');
+    Route::put('/admin/permissions', [PermissionController::class, 'update'])->name('permissions.update');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');

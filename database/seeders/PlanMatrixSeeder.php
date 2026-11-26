@@ -38,6 +38,12 @@ class PlanMatrixSeeder extends Seeder
                 );
 
                 if ($zone && $a['zone_plan'] !== null) {
+                    // ባህላዊ ቀፎ: repair the 578001806 digit-run typo seeded earlier, but never touch a plan the zone edited.
+                    PlanTarget::query()
+                        ->where('plan_activity_id', $activity->id)->where('location_id', $zone->id)
+                        ->where('fiscal_year', $data['fiscal_year'])->where('target', 578001806)
+                        ->update(['target' => $a['zone_plan']]);
+
                     PlanTarget::firstOrCreate(
                         ['plan_activity_id' => $activity->id, 'location_id' => $zone->id, 'fiscal_year' => $data['fiscal_year']],
                         ['target' => $a['zone_plan']],

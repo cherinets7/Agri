@@ -107,6 +107,25 @@
     <span class="badge red">&lt;50%</span> <span class="badge amber">50–79%</span> <span class="badge green">80–100%</span> <span class="badge blue">&gt;100% — ማረጋገጥ ይገባል</span>
 </div>
 
+@if(! empty($quality))
+<details class="card" id="matrix-admin-notes">
+    <summary><strong>⚠ የአስተዳደር ማስታወሻ — የአሃድ/ዕቅድ ጥርጣሬዎች ({{ count($quality) }})</strong></summary>
+    <p class="muted" style="margin:.4rem 0">
+        ከምንጭ ሰነዱ (agriculture-weekly-plan-report.docx) የተነሱ የመለኪያ አሃድና የዕቅድ ጥርጣሬዎች። ከታች ያሉት ራስ-ሰር ማስጠንቀቂያዎች ናቸው፤ ትክክለኛውን አሃዝ/መለኪያ በ
+        <a href="{{ route('plan.edit', ['year' => $year]) }}">ዕቅድ</a> እና <a href="{{ route('plan.structure') }}">ግቦችና ተግባራት</a> ገጽ ያስተካክሉ።
+    </p>
+    <ul style="margin:.2rem 0 0 1.2rem">
+        @foreach($quality as $flag)
+            <li>
+                <strong>{{ $flag['activity'] }}</strong> —
+                <span class="badge {{ $flag['kind'] === 'known' ? 'amber' : 'red' }}">{{ ['known' => 'የታወቀ ጉዳይ', 'over' => 'ክንውን ≫ ዕቅድ', 'under' => 'ክንውን ≪ ዕቅድ'][$flag['kind']] }}</span>
+                {{ $flag['message'] }}
+            </li>
+        @endforeach
+    </ul>
+</details>
+@endif
+
 <div class="actions">
     <a class="btn secondary" href="{{ route('exports.matrix', $query) }}">⬇ ማትሪክስ Excel</a>
     @can('create', App\Models\WeeklyPlanReport::class)<a class="btn" href="{{ route('weekly.create') }}">+ ሳምንታዊ ክንውን አስገባ</a>@endcan

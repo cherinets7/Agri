@@ -1,55 +1,341 @@
 {
-  "type": "FeatureCollection",
-  "name": "Yem_Zone_Woredas_Schematic",
-  "_todo": "TODO: Replace schematic placeholder polygons with official CSA / OCHA administrative boundary shapefile converted to GeoJSON, matching Location.code (YEM-SKAR, YEM-DSZ, YEM-FOFA, YEM-TOBA).",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {
-        "code": "YEM-SKAR",
-        "name_am": "ሳ/ከ/አስ/ር",
-        "name_en": "Sa/Ke/As/R"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[37.46, 7.82], [37.53, 7.82], [37.53, 7.88], [37.46, 7.88], [37.46, 7.82]]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "code": "YEM-DSZ",
-        "name_am": "ደ/ሳ/ዙ/ወረዳ",
-        "name_en": "De/Sa/Zu Woreda"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[37.36, 7.72], [37.48, 7.72], [37.46, 7.82], [37.53, 7.82], [37.56, 7.75], [37.62, 7.84], [37.46, 7.93], [37.35, 7.86], [37.36, 7.72]]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "code": "YEM-FOFA",
-        "name_am": "ፎፋ ወረዳ",
-        "name_en": "Fofa Woreda"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[37.36, 7.86], [37.46, 7.93], [37.62, 7.84], [37.65, 7.98], [37.50, 8.04], [37.34, 7.97], [37.36, 7.86]]]
-      }
-    },
-    {
-      "type": "Feature",
-      "properties": {
-        "code": "YEM-TOBA",
-        "name_am": "ቶባ ወረዳ",
-        "name_en": "Toba Woreda"
-      },
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [[[37.36, 7.60], [37.60, 7.62], [37.64, 7.76], [37.56, 7.75], [37.48, 7.72], [37.36, 7.72], [37.36, 7.60]]]
-      }
-    }
-  ]
+ "type": "FeatureCollection",
+ "name": "Yem_Zone_Woredas_SchematicSplit",
+ "_source": "Outer outline: geoBoundaries gbOpen ETH ADM3 (simplified), unit 'Yem SP Woreda' (shapeID 50319843B71172530098060); source Open Africa / Code for Ethiopia, 2016; license ODbL 1.0 (https://www.geoboundaries.org/).",
+ "_todo": "SCHEMATIC SPLIT: no public dataset publishes the four current Yem Zone woreda boundaries (Fofa, Toba and the two abbreviated woredas). The real zone outline is divided into four quadrants through its centroid only so the choropleth can be demonstrated. Replace each feature's geometry with the official woreda boundary (CSA/OCHA/zone GIS office) keeping properties.code to go live.",
+ "schematic": true,
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "code": "YEM-SKAR",
+    "name_am": "ሳ/ከ/አስ/ር",
+    "quadrant": "NE"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       37.48747,
+       7.81311
+      ],
+      [
+       37.57541,
+       7.81311
+      ],
+      [
+       37.58315,
+       7.84347
+      ],
+      [
+       37.58966,
+       7.85232
+      ],
+      [
+       37.5953,
+       7.86863
+      ],
+      [
+       37.60123,
+       7.90921
+      ],
+      [
+       37.60435,
+       7.91637
+      ],
+      [
+       37.60736,
+       7.94047
+      ],
+      [
+       37.60766,
+       7.95818
+      ],
+      [
+       37.60364,
+       7.966
+      ],
+      [
+       37.57358,
+       7.95338
+      ],
+      [
+       37.55833,
+       7.94948
+      ],
+      [
+       37.55025,
+       7.9504
+      ],
+      [
+       37.54009,
+       7.955
+      ],
+      [
+       37.53362,
+       7.96075
+      ],
+      [
+       37.52254,
+       7.97821
+      ],
+      [
+       37.51924,
+       7.993
+      ],
+      [
+       37.51481,
+       8.00081
+      ],
+      [
+       37.5025,
+       8.01296
+      ],
+      [
+       37.49161,
+       8.01819
+      ],
+      [
+       37.48747,
+       8.0173
+      ],
+      [
+       37.48747,
+       7.81311
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "code": "YEM-DSZ",
+    "name_am": "ደ/ሳ/ዙ/ወረዳ",
+    "quadrant": "SE"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       37.48747,
+       7.81311
+      ],
+      [
+       37.48747,
+       7.59806
+      ],
+      [
+       37.49915,
+       7.60951
+      ],
+      [
+       37.51628,
+       7.6327
+      ],
+      [
+       37.52312,
+       7.64661
+      ],
+      [
+       37.52995,
+       7.65521
+      ],
+      [
+       37.54414,
+       7.68535
+      ],
+      [
+       37.54849,
+       7.70232
+      ],
+      [
+       37.54882,
+       7.72716
+      ],
+      [
+       37.55628,
+       7.74946
+      ],
+      [
+       37.56232,
+       7.76186
+      ],
+      [
+       37.57541,
+       7.81311
+      ],
+      [
+       37.48747,
+       7.81311
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "code": "YEM-FOFA",
+    "name_am": "ፎፋ ወረዳ",
+    "quadrant": "NW"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       37.39978,
+       7.95516
+      ],
+      [
+       37.41742,
+       7.94472
+      ],
+      [
+       37.42966,
+       7.93185
+      ],
+      [
+       37.43752,
+       7.91967
+      ],
+      [
+       37.43521,
+       7.89921
+      ],
+      [
+       37.41258,
+       7.85507
+      ],
+      [
+       37.40565,
+       7.82841
+      ],
+      [
+       37.4048,
+       7.81311
+      ],
+      [
+       37.48747,
+       7.81311
+      ],
+      [
+       37.48747,
+       8.0173
+      ],
+      [
+       37.47845,
+       8.01535
+      ],
+      [
+       37.46046,
+       8.00879
+      ],
+      [
+       37.42535,
+       8.00396
+      ],
+      [
+       37.41025,
+       7.99945
+      ],
+      [
+       37.40493,
+       7.99473
+      ],
+      [
+       37.3926,
+       7.99404
+      ],
+      [
+       37.39062,
+       7.98586
+      ],
+      [
+       37.38854,
+       7.97552
+      ],
+      [
+       37.39062,
+       7.96311
+      ],
+      [
+       37.39978,
+       7.95516
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "code": "YEM-TOBA",
+    "name_am": "ቶባ ወረዳ",
+    "quadrant": "SW"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       37.4048,
+       7.81311
+      ],
+      [
+       37.40083,
+       7.74221
+      ],
+      [
+       37.40245,
+       7.71072
+      ],
+      [
+       37.402,
+       7.68383
+      ],
+      [
+       37.40778,
+       7.65877
+      ],
+      [
+       37.42065,
+       7.63497
+      ],
+      [
+       37.43621,
+       7.58523
+      ],
+      [
+       37.44591,
+       7.56549
+      ],
+      [
+       37.45089,
+       7.56792
+      ],
+      [
+       37.48229,
+       7.59299
+      ],
+      [
+       37.48747,
+       7.59806
+      ],
+      [
+       37.48747,
+       7.81311
+      ],
+      [
+       37.4048,
+       7.81311
+      ]
+     ]
+    ]
+   }
+  }
+ ]
 }

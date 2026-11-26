@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Channels\SmsChannel;
 use App\Support\EthiopianDate;
 use Carbon\CarbonInterface;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -22,6 +23,9 @@ class MissingReportNotification extends Notification
         $channels = ['database'];
         if ($this->sendEmail && ! empty($notifiable->email) && config('extension.email_reminders_enabled', true)) {
             $channels[] = 'mail';
+        }
+        if (config('extension.sms_reminders_enabled') && ! empty($notifiable->phone)) {
+            $channels[] = SmsChannel::class;
         }
 
         return $channels;
@@ -44,6 +48,15 @@ class MissingReportNotification extends Notification
             ->line($body)
             ->action('ሪፖርት አስገባ', $this->actionUrl)
             ->salutation('የየም ዞን ግብርና ክትትል ሲስተም');
+    }
+
+    public function toSms(object $notifiable): string
+    {
+        $et = EthiopianDate::format($this->targetDate);
+
+        return $this->kind === 'missing_weekly'
+            ? "ማሳሰቢያ፦ ለ{$this->locationName} የ{$et} ሳምንታዊ ክንውን ሪፖርት አልተላከም።"
+            : "ማሳሰቢያ፦ ለ{$this->locationName} የ{$et} ዕለታዊ ሪፖርት አልተላከም።";
     }
 
     public function toArray(object $notifiable): array

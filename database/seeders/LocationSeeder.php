@@ -9,18 +9,21 @@ use Illuminate\Database\Seeder;
 class LocationSeeder extends Seeder
 {
     /**
-     * Woreda / structure names come from the weekly performance matrix
-     * (አፈፃፀም ማትሪክስ): ሳ/ከ/አስ/ር, ደ/ሳ/ዙ/ወረዳ, ፎፋ ወረዳ, ቶባ ወረዳ.
-     * The first two are abbreviations in the source and can be renamed
-     * from the locations screen once the full names are confirmed.
-     * Kebeles are SAMPLE placeholders until the zone supplies the real list.
+     * Woreda codes are stable keys (matrix data, map GeoJSON, imports); the display names are
+     * editable from the locations screen (አካባቢዎች).
+     *
+     * `confirmed = false` marks a BEST-GUESS expansion of an abbreviation copied from the
+     * performance matrix (ሳ/ከ/አስ/ር, ደ/ሳ/ዙ/ወረዳ). The original abbreviation is kept in brackets so
+     * nothing is lost, and the UI shows a "ግምት — ያረጋግጡ" badge until the zone renames/confirms it.
      */
     public const WOREDAS = [
-        ['code' => 'YEM-SKAR', 'name_am' => 'ሳ/ከ/አስ/ር', 'name_en' => 'Sa/Ke/As/R (abbrev. from matrix)'],
-        ['code' => 'YEM-DSZ', 'name_am' => 'ደ/ሳ/ዙ/ወረዳ', 'name_en' => 'De/Sa/Zu woreda (abbrev. from matrix)'],
-        ['code' => 'YEM-FOFA', 'name_am' => 'ፎፋ ወረዳ', 'name_en' => 'Fofa woreda'],
-        ['code' => 'YEM-TOBA', 'name_am' => 'ቶባ ወረዳ', 'name_en' => 'Toba woreda'],
+        ['code' => 'YEM-SKAR', 'name_am' => 'ሳጃ ከተማ አስተዳደር (ሳ/ከ/አስ/ር)', 'name_en' => 'Saja Town Administration (abbrev. Sa/Ke/As/R — unconfirmed)', 'confirmed' => false],
+        ['code' => 'YEM-DSZ', 'name_am' => 'ደ/ሳጃ ዙሪያ ወረዳ (ደ/ሳ/ዙ/ወረዳ)', 'name_en' => 'De/Saja Zuria woreda (abbrev. De/Sa/Zu — unconfirmed)', 'confirmed' => false],
+        ['code' => 'YEM-FOFA', 'name_am' => 'ፎፋ ወረዳ', 'name_en' => 'Fofa woreda', 'confirmed' => true],
+        ['code' => 'YEM-TOBA', 'name_am' => 'ቶባ ወረዳ', 'name_en' => 'Toba woreda', 'confirmed' => true],
     ];
+
+    public const KEBELES_PER_WOREDA = 3;
 
     public function run(): void
     {
@@ -29,18 +32,50 @@ class LocationSeeder extends Seeder
             ['level' => Level::Zone, 'name_am' => 'የየም ዞን', 'name_en' => 'Yem Zone', 'parent_id' => null],
         );
 
+        $kebeleNo = 0;
         foreach (self::WOREDAS as $w) {
-            $woreda = Location::updateOrCreate(
-                ['code' => $w['code']],
-                ['level' => Level::Woreda, 'name_am' => $w['name_am'], 'name_en' => $w['name_en'], 'parent_id' => $zone->id],
-            );
+            $woreda = $this->seed($w['code'], [
+                'level' => Level::Woreda,
+                'name_am' => $w['name_am'],
+                'name_en' => $w['name_en'],
+                'parent_id' => $zone->id,
+                'is_placeholder' => false,
+                'name_confirmed' => $w['confirmed'],
+            ]);
 
-            foreach ([1, 2, 3] as $n) {
-                Location::updateOrCreate(
-                    ['code' => $w['code'].'-K'.$n],
-                    ['level' => Level::Kebele, 'name_am' => "ናሙና ቀበሌ {$n}", 'name_en' => "Sample kebele {$n}", 'parent_id' => $woreda->id],
-                );
+            // Numbered, realistic placeholders (ቀበሌ 01 ...). The real kebele list was not supplied.
+            for ($n = 1; $n <= self::KEBELES_PER_WOREDA; $n++) {
+                $kebeleNo++;
+                $label = str_pad((string) $kebeleNo, 2, '0', STR_PAD_LEFT);
+                $this->seed($w['code'].'-K'.$n, [
+                    'level' => Level::Kebele,
+                    'name_am' => "ቀበሌ {$label}",
+                    'name_en' => "Kebele {$label} (placeholder)",
+                    'parent_id' => $woreda->id,
+                    'is_placeholder' => true,
+                    'name_confirmed' => true,
+                ]);
             }
         }
+    }
+
+    /**
+     * Idempotent and safe on a live system: a row the zone already renamed/confirmed is never overwritten.
+     */
+    private function seed(string $code, array $attributes): Location
+    {
+        $location = Location::query()->where('code', $code)->first();
+
+        if (! $location) {
+            return Location::create(['code' => $code] + $attributes);
+        }
+
+        if ($location->needsReview()) {
+            $location->update($attributes);
+        } else {
+            $location->update(['level' => $attributes['level'], 'parent_id' => $attributes['parent_id']]);
+        }
+
+        return $location;
     }
 }

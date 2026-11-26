@@ -5,6 +5,18 @@
  * Source: Word matrix. Units written as ditto marks (”) in the source were resolved by meaning of the activity;
  * the zone can correct any unit/plan from the plan screens. 'actuals' order = woreda codes in 'woredas'.
  * null = blank in the source (nothing reported); 0 = '-' in the source.
+ *
+ * DATA-QUALITY NOTES (also surfaced to admins on the matrix via config/plan.php 'known_issues'):
+ *  - ባህላዊ ቀፎ: the source plan reads 578001806 (against an actual of 30,344). It is an obvious digit-run
+ *    typo ("57800" + a stray "1806", the plan of the forage row further down) and is stored as 57,800.
+ *    Confirm the real plan on the plan screen; PlanMatrixSeeder only corrects the untouched typo value.
+ *  - Units were resolved by the meaning of the activity because the source uses ditto marks (”).
+ *    Doubtful ones: ኮረሪማ ልማት (count vs hectare), በመደበኛ ኮምፖስት ዝግጅት (ton vs quintal).
+ *  - Several source "zone actual" figures do not equal the sum of the four woreda columns
+ *    (e.g. የ2017 ዓ/ም የበልግ ሰብሎች: 10,155.87 vs 10,716.98; የመስኖ ሰብሎች አረም: 1,558.3 vs 1,741). The app always shows the
+ *    SUM of woreda actuals as the zone figure and keeps the source number in 'doc_zone_actual' for reference only.
+ *  - የመስኖ ሰብሎች በሽታ ክትትል: plan 1,741 looks copied from the row above (actual 31.6).
+ *  - Blank (null) actuals mean "not reported" and stay blank; they are not treated as 0.
  */
 
 return [
@@ -89,7 +101,7 @@ return [
                 ['name_am' => 'ፍየል ማሞከት', 'unit' => 'count', 'zone_plan' => 87790, 'doc_zone_actual' => 49216, 'actuals' => [2393, 18320, 20429, 8074]],
                 ['name_am' => 'የአንድ ቀን ጫጩት', 'unit' => 'count', 'zone_plan' => 120000, 'doc_zone_actual' => 32492, 'actuals' => [25342, 5794, 555, 801]],
                 ['name_am' => 'የ48 ቀን ቄብና ኮክኔ', 'unit' => 'count', 'zone_plan' => 87175, 'doc_zone_actual' => 32985, 'actuals' => [14308, 8100, 7927, 2650]],
-                ['name_am' => 'ባህላዊ ቀፎ', 'unit' => 'count', 'zone_plan' => 578001806, 'doc_zone_actual' => 30344, 'actuals' => [3150, 11075, 7382, 8737]],
+                ['name_am' => 'ባህላዊ ቀፎ', 'unit' => 'count', 'zone_plan' => 57800, 'doc_zone_actual' => 30344, 'actuals' => [3150, 11075, 7382, 8737]],
                 ['name_am' => 'የማር ምርት', 'unit' => 'ton', 'zone_plan' => 600, 'doc_zone_actual' => 371, 'actuals' => [19, 129, 132, 91]],
                 ['name_am' => 'የዓሣ ጉሬ ዝግጅት', 'unit' => 'count', 'zone_plan' => 36, 'doc_zone_actual' => 2, 'actuals' => [0, 0, 1, 1]],
                 ['name_am' => 'የተሻሻለ መኖ ልማት', 'unit' => 'hectare', 'zone_plan' => 1806, 'doc_zone_actual' => 439.28, 'actuals' => [27.75, 112.75, 100.18, 198.6]],

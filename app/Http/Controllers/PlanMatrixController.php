@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\MatrixQuality;
 use App\Services\PlanMatrix;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -36,8 +37,11 @@ class PlanMatrixController extends Controller
         ];
     }
 
-    public function index(Request $request, PlanMatrix $matrix)
+    public function index(Request $request, PlanMatrix $matrix, MatrixQuality $quality)
     {
-        return view('matrix.index', self::dataFromRequest($request, $matrix));
+        $data = self::dataFromRequest($request, $matrix);
+        $data['quality'] = $request->user()->isZone() ? $quality->flags($data) : [];
+
+        return view('matrix.index', $data);
     }
 }

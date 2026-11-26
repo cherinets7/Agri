@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PeriodGranularity;
 use App\Enums\ReportStatus;
 use App\Enums\SectorType;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SectorReport extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'sector', 'period_type', 'report_date', 'fiscal_year',
         'user_id', 'location_id', 'status', 'payload', 'notes',

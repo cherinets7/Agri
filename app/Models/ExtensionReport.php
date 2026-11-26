@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PerformanceBand;
 use App\Enums\ReportStatus;
+use App\Models\Concerns\Auditable;
 use App\Services\ExtensionPerformance;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExtensionReport extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'user_id', 'location_id', 'report_date', 'status',
         'farmers_total', 'new_farmers', 'repeat_farmers', 'female_farmers', 'youth_farmers',

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\WeeklyPlanStatus;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class WeeklyPlanReport extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'woreda_id', 'user_id', 'fiscal_year', 'week_start', 'status', 'notes',
         'declared_at', 'submitted_at', 'approved_by', 'approved_at',

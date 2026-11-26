@@ -20,16 +20,28 @@
     በዚህ ሳምንት የተከናወነውን ብቻ ያስገቡ (ድምሩ ራስ-ሰር ይደመራል)። ባዶ = አልተከናወነም/አልተመዘገበም፤ 0 = ዜሮ።
 </p>
 
+@if($kebeleCoverage)
+    <div class="card" id="kebele-weekly-hint">
+        <strong>የቀበሌ ክንውን ድምር፦</strong>
+        {{ $kebeleCoverage['reported'] }} ከ {{ $kebeleCoverage['total'] }} ቀበሌዎች ለዚህ ሳምንት አስገብተዋል።
+        @if($report->exists && $kebeleSums)
+            <button class="btn secondary" type="button" id="fill-from-kebeles">ከቀበሌ ድምር ሙላ</button>
+        @elseif(! $report->exists && $kebeleSums)
+            <span class="muted">(አዲስ ሪፖርት በቀበሌ ድምር አስቀድሞ ተሞልቷል፤ ይመልከቱና ያስተካክሉ።)</span>
+        @endif
+    </div>
+@endif
+
 <form method="POST" action="{{ $report->exists ? route('weekly.update', $report) : route('weekly.store') }}" data-offline-draft>
     @csrf
     @if($report->exists) @method('PUT') @else <input type="hidden" name="week_start" value="{{ $report->week_start->toDateString() }}"> @endif
 
     <div class="card table-wrap">
         <table>
-            <thead><tr><th>ተ/ቁ</th><th>ተግባር</th><th>መለኪያ</th><th class="num">የወረዳ ዕቅድ</th><th class="num">እስካሁን (ድምር)</th><th class="num">የዚህ ሳምንት ክንውን</th></tr></thead>
+            <thead><tr><th>ተ/ቁ</th><th>ተግባር</th><th>መለኪያ</th><th class="num">የወረዳ ዕቅድ</th><th class="num">እስካሁን (ድምር)</th>@if($kebeleCoverage)<th class="num">የቀበሌዎች ድምር</th>@endif<th class="num">የዚህ ሳምንት ክንውን</th></tr></thead>
             <tbody>
             @foreach($goals as $goal)
-                <tr><td colspan="6" class="goal-head"><strong>{{ $goal->number }}. {{ $goal->name_am }}</strong></td></tr>
+                <tr><td colspan="{{ $kebeleCoverage ? 7 : 6 }}" class="goal-head"><strong>{{ $goal->number }}. {{ $goal->name_am }}</strong></td></tr>
                 @foreach($goal->activities as $a)
                     <tr>
                         <td></td>
@@ -37,8 +49,9 @@
                         <td>{{ $a->unit->label() }}</td>
                         <td class="num">{{ qty($targets[$a->id] ?? null) }}</td>
                         <td class="num">{{ qty($before[$a->id] ?? null) }}</td>
+                        @if($kebeleCoverage)<td class="num">{{ qty($kebeleSums[$a->id] ?? null) }}</td>@endif
                         <td class="num" style="min-width:9rem">
-                            <input type="number" step="any" min="0" name="values[{{ $a->id }}]" aria-label="{{ $a->name_am }}"
+                            <input type="number" step="any" min="0" name="values[{{ $a->id }}]" aria-label="{{ $a->name_am }}" data-kebele-sum="{{ $kebeleSums[$a->id] ?? '' }}"
                                    value="{{ old('values.'.$a->id, isset($current[$a->id]) ? qty($current[$a->id], '') : '') }}">
                         </td>
                     </tr>
@@ -59,4 +72,13 @@
         </div>
     </div>
 </form>
+@if($kebeleCoverage)
+<script>
+document.getElementById('fill-from-kebeles')?.addEventListener('click', function () {
+    document.querySelectorAll('input[data-kebele-sum]').forEach(function (el) {
+        if (el.dataset.kebeleSum !== '') { el.value = el.dataset.kebeleSum; }
+    });
+});
+</script>
+@endif
 @endsection

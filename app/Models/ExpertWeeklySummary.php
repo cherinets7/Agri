@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ReportStatus;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExpertWeeklySummary extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'user_id', 'location_id', 'week_start', 'fiscal_year', 'status',
         'days_reported', 'farmers_total', 'female_farmers', 'youth_farmers',

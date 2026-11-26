@@ -38,10 +38,21 @@
             @can('manage-plan')
                 <a href="{{ route('plan.edit') }}" @class(['active' => request()->routeIs('plan.*')])>ዕቅድ</a>
             @endcan
-            @if(auth()->user()->isZone() || auth()->user()->isWoreda())
+            @can('manage-users')
                 <a href="{{ route('users.index') }}" @class(['active' => request()->routeIs('users.*')])>ተጠቃሚዎች</a>
+            @endcan
+            @can('manage-locations')
                 <a href="{{ route('locations.index') }}" @class(['active' => request()->routeIs('locations.*')])>አካባቢዎች</a>
-            @endif
+            @endcan
+            @can('enter-kebele-weekly')
+                <a href="{{ route('kebele-weekly.edit') }}" @class(['active' => request()->routeIs('kebele-weekly.*')])>የቀበሌ ሳምንታዊ ክንውን</a>
+            @endcan
+            @can('view-audit')
+                <a href="{{ route('audit.index') }}" @class(['active' => request()->routeIs('audit.*')])>ኦዲት</a>
+            @endcan
+            @can('manage-permissions')
+                <a href="{{ route('permissions.edit') }}" @class(['active' => request()->routeIs('permissions.*')])>ፈቃዶች</a>
+            @endcan
             <a href="{{ route('notifications.index') }}" @class(['active' => request()->routeIs('notifications.*')])>
                 🔔 ማሳሰቢያ @if($unreadNotifs > 0)<span class="notif-badge">{{ $unreadNotifs }}</span>@endif
             </a>

@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Enums\PlanUnit;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PlanActivity extends Model
 {
+    use Auditable;
+
     protected $fillable = ['strategic_goal_id', 'name_am', 'name_en', 'unit', 'sort_order', 'is_active'];
 
     protected function casts(): array

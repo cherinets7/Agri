@@ -6,6 +6,7 @@ use App\Enums\Level;
 use App\Enums\WeeklyPlanStatus;
 use App\Models\Location;
 use App\Models\WeeklyPlanReport;
+use App\Services\KebeleWeekly;
 use App\Services\PlanMatrix;
 use App\Services\WeeklyPlanWorkflow;
 use App\Support\EthiopianDate;
@@ -14,12 +15,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 class WeeklyPlanReportController extends Controller
 {
-    public function __construct(private WeeklyPlanWorkflow $workflow, private PlanMatrix $matrix) {}
+    public function __construct(private WeeklyPlanWorkflow $workflow, private PlanMatrix $matrix, private KebeleWeekly $kebeleWeekly) {}
 
     public function index(Request $request)
     {
@@ -218,13 +220,22 @@ class WeeklyPlanReportController extends Controller
     {
         $before = $this->matrix->cumulativeFor($report->woreda_id, $report->fiscal_year, $report->week_start, $report->id);
 
+        $kebeleSums = [];
+        $coverage = null;
+        if (KebeleWeekly::enabled() && Gate::allows('view-kebele-weekly')) {
+            $kebeleSums = $this->kebeleWeekly->sumsForWoreda($report->woreda_id, $report->week_start);
+            $coverage = $this->kebeleWeekly->coverage($report->woreda_id, $report->week_start);
+        }
+
         return [
+            'kebeleSums' => $kebeleSums,
+            'kebeleCoverage' => $coverage,
             'report' => $report,
             'woreda' => $report->woreda ?? Location::find($report->woreda_id),
             'goals' => $this->matrix->activeGoals(),
             'targets' => $this->matrix->woredaTargets($report->woreda_id, $report->fiscal_year),
             'before' => $before,
-            'current' => $report->exists ? $report->actuals()->pluck('value', 'plan_activity_id')->all() : [],
+            'current' => $report->exists ? $report->actuals()->pluck('value', 'plan_activity_id')->all() : $kebeleSums,
         ];
     }
 

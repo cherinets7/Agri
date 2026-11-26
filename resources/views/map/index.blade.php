@@ -46,7 +46,8 @@
             @endif
         </div>
         <p class="muted" style="font-size:.82rem;margin:.5rem 0 0">
-            TODO: ወሰኖቹ ናሙና (schematic) ናቸው፤ ከCSA/OCHA የሚገኝ ትክክለኛ GeoJSON ወደ <code>public/geo/yem-woredas.geojson</code> ሲገባ ካርታው በቀጥታ ይዘምናል።
+            <strong>ማሳሰቢያ (TODO)፦</strong> የዞኑ ውጫዊ ወሰን እውነተኛ ነው (geoBoundaries / Open Africa, ODbL፤ "Yem SP Woreda")፤ ነገር ግን የአራቱ ወረዳዎች ውስጣዊ ክፍፍል <strong>ናሙና (schematic)</strong> ነው፤ ምክንያቱም የፎፋ፣ ቶባ እና ሌሎቹ ወረዳዎች ወቅታዊ ወሰን በይፋ አልተለቀቀም።
+            ትክክለኛ ወረዳ ወሰን (CSA/OCHA ወይም የዞኑ GIS) ወደ <code>public/geo/yem-woredas.geojson</code> ሲገባ (<code>properties.code</code> ሳይቀየር) ካርታው በቀጥታ ይዘምናል።
         </p>
     </div>
 
@@ -142,7 +143,7 @@
             const map = L.map('yem-leaflet-map').setView([7.83, 37.49], 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 18,
-                attribution: '&copy; OpenStreetMap'
+                attribution: '&copy; OpenStreetMap · ወሰን: geoBoundaries (ODbL)'
             }).addTo(map);
             const layer = L.geoJSON(geo, {
                 style: (f) => ({

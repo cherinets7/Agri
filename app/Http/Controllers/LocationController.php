@@ -12,7 +12,7 @@ class LocationController extends Controller
 {
     private function ensureManager(Request $request): void
     {
-        abort_unless($request->user()->isZone() || $request->user()->isWoreda(), 403);
+        abort_unless($request->user()->can('manage-locations'), 403);
     }
 
     public function index(Request $request)
@@ -58,8 +58,29 @@ class LocationController extends Controller
             abort_unless($parent->id === $user->location_id, 403);
         }
 
-        Location::create([...$data, 'level' => $level]);
+        Location::create([...$data, 'level' => $level, 'is_placeholder' => false, 'name_confirmed' => true]);
 
         return redirect()->route('locations.index')->with('status', $level->label().' ተጨምሯል።');
+    }
+
+    /** Rename a woreda/kebele (placeholder and guessed names are confirmed by saving). The code never changes. */
+    public function update(Request $request, Location $location): RedirectResponse
+    {
+        $this->ensureManager($request);
+        $user = $request->user();
+
+        abort_if($location->level === Level::Zone && ! $user->isZone(), 403);
+        if ($user->isWoreda()) {
+            abort_unless($location->parent_id === $user->location_id, 403);
+        }
+
+        $data = $request->validate([
+            'name_am' => ['required', 'string', 'max:120'],
+            'name_en' => ['nullable', 'string', 'max:120'],
+        ], [], ['name_am' => 'ስም (አማርኛ)', 'name_en' => 'ስም (እንግሊዝኛ)']);
+
+        $location->update([...$data, 'is_placeholder' => false, 'name_confirmed' => true]);
+
+        return redirect()->route('locations.index')->with('status', 'ስሙ ተስተካክሏል።');
     }
 }

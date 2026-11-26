@@ -19,6 +19,9 @@ return [
     // Send email reminders alongside in-app notifications when mailer is configured.
     'email_reminders_enabled' => filter_var(env('EXT_EMAIL_REMINDERS', true), FILTER_VALIDATE_BOOL),
 
+    // SMS reminders through the SmsGateway port (default `log` driver = stub, no paid gateway).
+    'sms_reminders_enabled' => filter_var(env('EXT_SMS_REMINDERS', false), FILTER_VALIDATE_BOOL),
+
     'service_types' => [
         'crop' => 'ሰብል (በልግ/መኸር)',
         'irrigation' => 'መስኖ',

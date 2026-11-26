@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     private function ensureManager(Request $request): void
     {
-        abort_unless($request->user()->isZone() || $request->user()->isWoreda(), 403);
+        abort_unless($request->user()->can('manage-users'), 403);
     }
 
     private function ensureCanManage(Request $request, User $target): void

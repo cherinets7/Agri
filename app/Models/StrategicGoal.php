@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class StrategicGoal extends Model
 {
+    use Auditable;
+
     protected $fillable = ['number', 'name_am', 'name_en', 'sort_order', 'is_active'];
 
     protected function casts(): array

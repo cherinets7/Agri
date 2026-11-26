@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Enums\PeriodicReportType;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InputDispatch extends Model
 {
+    use Auditable;
+
     protected $fillable = [
         'from_location_id', 'to_location_id', 'user_id',
         'dispatch_date', 'fiscal_year', 'input_type', 'unit', 'quantity', 'notes',

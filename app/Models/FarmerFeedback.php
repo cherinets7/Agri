@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FarmerFeedback extends Model
 {
+    use Auditable;
+
     protected $table = 'farmer_feedbacks';
 
     protected $fillable = [

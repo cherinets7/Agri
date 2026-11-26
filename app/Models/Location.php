@@ -3,17 +3,20 @@
 namespace App\Models;
 
 use App\Enums\Level;
+use App\Models\Concerns\Auditable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Location extends Model
 {
-    protected $fillable = ['parent_id', 'level', 'name_am', 'name_en', 'code'];
+    use Auditable;
+
+    protected $fillable = ['parent_id', 'level', 'name_am', 'name_en', 'code', 'is_placeholder', 'name_confirmed'];
 
     protected function casts(): array
     {
-        return ['level' => Level::class];
+        return ['level' => Level::class, 'is_placeholder' => 'boolean', 'name_confirmed' => 'boolean'];
     }
 
     public function parent(): BelongsTo
@@ -55,6 +58,12 @@ class Location extends Model
         }
 
         return implode(' ‹ ', $parts);
+    }
+
+    /** True while the name is a seeded stand-in or an unconfirmed guess the zone should replace. */
+    public function needsReview(): bool
+    {
+        return $this->is_placeholder || ! $this->name_confirmed;
     }
 
     public function scopeOfLevel($query, Level $level)
