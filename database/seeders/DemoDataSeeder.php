@@ -7,6 +7,7 @@ use App\Enums\PeriodGranularity;
 use App\Enums\PeriodicReportType;
 use App\Enums\ReportStatus;
 use App\Enums\Role;
+use App\Enums\SectorType;
 use App\Enums\WeeklyPlanStatus;
 use App\Models\ExtensionReport;
 use App\Models\InputDispatch;
@@ -14,12 +15,14 @@ use App\Models\Location;
 use App\Models\PeriodicReport;
 use App\Models\PlanActivity;
 use App\Models\PlanTarget;
+use App\Models\SectorReport;
 use App\Models\User;
 use App\Models\WeeklyPlanReport;
 use App\Services\ExtensionPerformance;
 use App\Services\PeriodicReportWorkflow;
 use App\Services\PlanMatrix;
 use App\Services\ReportWorkflow;
+use App\Services\SectorReportWorkflow;
 use App\Services\WeeklyPlanWorkflow;
 use App\Support\EthiopianDate;
 use Illuminate\Database\Seeder;
@@ -55,6 +58,7 @@ class DemoDataSeeder extends Seeder
         $this->seedReports($experts);
         $this->seedWeeklyMatrix($zone);
         $this->seedPeriodicReports($zone, $experts);
+        $this->seedSectorReports($experts);
     }
 
     /** @param  list<User>  $experts */
@@ -222,6 +226,53 @@ class DemoDataSeeder extends Seeder
             foreach ($samples as $type => $payload) {
                 $r = PeriodicReport::create([
                     'report_type' => $type,
+                    'period_type' => PeriodGranularity::Weekly,
+                    'report_date' => $date,
+                    'fiscal_year' => $fy,
+                    'user_id' => $expert->id,
+                    'location_id' => $expert->location_id,
+                    'status' => ReportStatus::Draft,
+                    'payload' => $payload,
+                ]);
+                $workflow->record($r, $expert, 'create', null, ReportStatus::Draft);
+                $workflow->submit($r, $expert);
+                if ($i % 2 === 0 && $woredaUser) {
+                    $workflow->verify($r, $woredaUser);
+                }
+                if ($i === 0 && $zoneUser) {
+                    $workflow->approve($r, $zoneUser);
+                }
+            }
+        }
+    }
+
+    /** @param  list<User>  $experts */
+    private function seedSectorReports(array $experts): void
+    {
+        if (SectorReport::query()->exists()) {
+            return;
+        }
+
+        $workflow = app(SectorReportWorkflow::class);
+        $zoneUser = User::where('role', Role::Zone->value)->first();
+        $date = today()->subDays(3);
+        $fy = EthiopianDate::fiscalYear($date);
+
+        $samples = [
+            SectorType::Irrigation->value => ['irrigation_source' => 'river', 'water_schemes' => 2, 'irrigated_ha' => 18.5, 'beneficiaries_male' => 26, 'beneficiaries_female' => 14, 'beneficiaries_total' => 40],
+            SectorType::Belg->value => ['maize_ha' => 14.0, 'vegetables_ha' => 5.5, 'wheat_ha' => 6.0, 'total_ha' => 25.5, 'expected_yield_quintal' => 240.0, 'moisture_status' => 'good'],
+            SectorType::Livestock->value => ['ai_inseminations' => 15, 'calves_born' => 9, 'vaccinated_count' => 180, 'milk_liters' => 520.0, 'forage_ha' => 8.0],
+            SectorType::Fishery->value => ['active_ponds' => 3, 'fingerlings_stocked' => 900, 'fish_harvest_kg' => 64.0, 'beneficiary_farmers' => 14],
+            SectorType::NaturalResource->value => ['terracing_km' => 11.2, 'seedlings_planted' => 6400, 'watershed_ha' => 32.0, 'compost_tons' => 24.0, 'participants_count' => 145],
+            SectorType::CoffeeSpice->value => ['coffee_seedlings' => 3200, 'coffee_ha' => 9.5, 'berbere_ha' => 4.0, 'korarima_ha' => 2.5, 'other_spice_ha' => 1.5, 'rehabilitated_ha' => 3.0],
+            SectorType::DemoFattening->value => ['cattle_fattened' => 22, 'shoat_fattened' => 38, 'demo_plots_count' => 4, 'trial_participants' => 30, 'trial_outcome' => 'የመኖና የዝርያ ማሻሻያ ጥሩ ውጤት'],
+        ];
+
+        foreach (array_slice($experts, 0, 5) as $i => $expert) {
+            $woredaUser = User::where('role', Role::Woreda->value)->where('location_id', $expert->location->parent_id)->first();
+            foreach ($samples as $sector => $payload) {
+                $r = SectorReport::create([
+                    'sector' => $sector,
                     'period_type' => PeriodGranularity::Weekly,
                     'report_date' => $date,
                     'fiscal_year' => $fy,

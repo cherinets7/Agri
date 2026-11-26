@@ -88,10 +88,18 @@
     </div>
 @endunless
 
-<div class="card">
-    <strong>{{ $periodicPending['label'] }}፦</strong> {{ $periodicPending['count'] }}
-    <div class="actions">
-        <a class="btn sm" href="{{ route('periodic.hub') }}">ሪፖርቶች (#2–#8) ክፈት</a>
+<div class="grid cols-2">
+    <div class="card">
+        <strong>{{ $periodicPending['label'] }}፦</strong> {{ $periodicPending['count'] }}
+        <div class="actions">
+            <a class="btn sm" href="{{ route('periodic.hub') }}">ሪፖርቶች (#2–#8) ክፈት</a>
+        </div>
+    </div>
+    <div class="card">
+        <strong>{{ $sectorPending['label'] }}፦</strong> {{ $sectorPending['count'] }}
+        <div class="actions">
+            <a class="btn sm" href="{{ route('sectors.hub') }}">የዘርፍ ቅጾች ክፈት</a>
+        </div>
     </div>
 </div>
 

@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\PeriodicReportType;
+use App\Enums\SectorType;
 use App\Exports\MatrixExport;
 use App\Exports\PerformanceExport;
 use App\Exports\PeriodicReportsExport;
 use App\Exports\ReportsExport;
+use App\Exports\SectorReportsExport;
 use App\Services\ExtensionPerformance;
 use App\Services\PeriodicAggregation;
 use App\Services\PlanMatrix;
+use App\Services\SectorAggregation;
 use App\Support\Period;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -56,6 +59,22 @@ class ExportController extends Controller
         return Excel::download(
             new PeriodicReportsExport($reportType, $query, $summary),
             "ሪፖርት-{$reportType->number()}-{$period->from->toDateString()}_{$period->to->toDateString()}.xlsx",
+        );
+    }
+
+    public function sector(Request $request, string $sector, SectorAggregation $aggregation)
+    {
+        $sectorType = SectorType::from($sector);
+        $user = $request->user();
+        $period = Period::fromRequest($request, 'last30');
+        $woredaId = $user->isWoreda() ? $user->location_id : ($user->isZone() ? ($request->integer('woreda') ?: null) : null);
+
+        $query = SectorReportController::filteredQuery($request, $sectorType, $period);
+        $summary = $aggregation->summarize($user, $sectorType, $period->from, $period->to, $woredaId, $request->boolean('approved'));
+
+        return Excel::download(
+            new SectorReportsExport($sectorType, $query, $summary),
+            "ዘርፍ-{$sectorType->value}-{$period->from->toDateString()}_{$period->to->toDateString()}.xlsx",
         );
     }
 }

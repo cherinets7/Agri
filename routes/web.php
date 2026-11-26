@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\PeriodicReportType;
+use App\Enums\SectorType;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\PeriodicReportController;
 use App\Http\Controllers\PlanMatrixController;
 use App\Http\Controllers\PlanStructureController;
 use App\Http\Controllers\PlanTargetController;
+use App\Http\Controllers\SectorReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WeeklyPlanReportController;
 use Illuminate\Support\Facades\Route;
@@ -62,6 +64,25 @@ Route::middleware('auth')->group(function () {
         ->whereIn('type', $periodicTypes)->name('exports.periodic');
     Route::post('/input-dispatches', [InputDispatchController::class, 'store'])->name('dispatches.store');
     Route::delete('/input-dispatches/{dispatch}', [InputDispatchController::class, 'destroy'])->name('dispatches.destroy');
+
+    $sectorTypes = array_column(SectorType::cases(), 'value');
+    Route::get('/sector-reports', [SectorReportController::class, 'hub'])->name('sectors.hub');
+    Route::get('/sector-reports/sector/{sector}', [SectorReportController::class, 'index'])
+        ->whereIn('sector', $sectorTypes)->name('sectors.index');
+    Route::get('/sector-reports/sector/{sector}/create', [SectorReportController::class, 'create'])
+        ->whereIn('sector', $sectorTypes)->name('sectors.create');
+    Route::post('/sector-reports/sector/{sector}', [SectorReportController::class, 'store'])
+        ->whereIn('sector', $sectorTypes)->name('sectors.store');
+    Route::get('/sector-reports/{sectorReport}', [SectorReportController::class, 'show'])->name('sectors.show');
+    Route::get('/sector-reports/{sectorReport}/edit', [SectorReportController::class, 'edit'])->name('sectors.edit');
+    Route::put('/sector-reports/{sectorReport}', [SectorReportController::class, 'update'])->name('sectors.update');
+    Route::delete('/sector-reports/{sectorReport}', [SectorReportController::class, 'destroy'])->name('sectors.destroy');
+    Route::post('/sector-reports/{sectorReport}/submit', [SectorReportController::class, 'submit'])->name('sectors.submit');
+    Route::post('/sector-reports/{sectorReport}/verify', [SectorReportController::class, 'verify'])->name('sectors.verify');
+    Route::post('/sector-reports/{sectorReport}/approve', [SectorReportController::class, 'approve'])->name('sectors.approve');
+    Route::post('/sector-reports/{sectorReport}/return', [SectorReportController::class, 'return'])->name('sectors.return');
+    Route::get('/exports/sectors/{sector}', [ExportController::class, 'sector'])
+        ->whereIn('sector', $sectorTypes)->name('exports.sectors');
 
     Route::get('/weekly-plan', [WeeklyPlanReportController::class, 'index'])->name('weekly.index');
     Route::get('/weekly-plan/create', [WeeklyPlanReportController::class, 'create'])->name('weekly.create');
