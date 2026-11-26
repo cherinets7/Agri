@@ -61,3 +61,9 @@ dl.kv dd{margin:0}
 .pager nav svg{width:1rem;height:1rem}
 .pager nav>div:first-child{display:none}
 @media (max-width:600px){main{padding:.6rem}h1{font-size:1.25rem}th,td{padding:.4rem}}
+.matrix th.grp{text-align:center}
+.matrix td.goal-n,.matrix td.goal{background:#f7faf6;font-weight:600}
+.matrix td.goal-n{text-align:center}
+.matrix thead th{vertical-align:middle}
+.goal-head{background:#f0f4ef}
+table input[type=number],table input[type=text],table select{padding:.3rem .45rem}

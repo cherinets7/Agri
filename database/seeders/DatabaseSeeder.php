@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(LocationSeeder::class);
+        $this->call(PlanMatrixSeeder::class);
 
         if (env('ADMIN_EMAIL') && env('ADMIN_PASSWORD')) {
             User::updateOrCreate(['email' => env('ADMIN_EMAIL')], [

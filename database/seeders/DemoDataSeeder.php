@@ -5,11 +5,18 @@ namespace Database\Seeders;
 use App\Enums\Level;
 use App\Enums\ReportStatus;
 use App\Enums\Role;
+use App\Enums\WeeklyPlanStatus;
 use App\Models\ExtensionReport;
 use App\Models\Location;
+use App\Models\PlanActivity;
+use App\Models\PlanTarget;
 use App\Models\User;
+use App\Models\WeeklyPlanReport;
 use App\Services\ExtensionPerformance;
+use App\Services\PlanMatrix;
 use App\Services\ReportWorkflow;
+use App\Services\WeeklyPlanWorkflow;
+use App\Support\EthiopianDate;
 use Illuminate\Database\Seeder;
 
 /** Local/demo accounts and sample reports. Password for every account: "password". */
@@ -41,6 +48,7 @@ class DemoDataSeeder extends Seeder
         }
 
         $this->seedReports($experts);
+        $this->seedWeeklyMatrix($zone);
     }
 
     /** @param  list<User>  $experts */
@@ -96,6 +104,72 @@ class DemoDataSeeder extends Seeder
                 if ($d >= 8 && $zoneUser) {
                     $workflow->approve($report, $zoneUser);
                 }
+            }
+        }
+    }
+
+    /**
+     * Opening cumulative actuals from the Word matrix (one approved "week" per woreda) and an
+     * equal demo split of the zone plan to the woredas so the % columns have something to show.
+     */
+    private function seedWeeklyMatrix(Location $zone): void
+    {
+        $data = PlanMatrixSeeder::data();
+        $year = $data['fiscal_year'];
+
+        if (WeeklyPlanReport::query()->where('fiscal_year', $year)->exists()) {
+            return;
+        }
+
+        $woredas = Location::ofLevel(Level::Woreda)->whereIn('code', $data['woredas'])->get()->keyBy('code');
+        $zoneUser = User::where('role', Role::Zone->value)->first();
+        $workflow = app(WeeklyPlanWorkflow::class);
+        $week = PlanMatrix::weekStart(EthiopianDate::fiscalYearRange($year)[1]);
+
+        $activities = [];
+        foreach ($data['goals'] as $g) {
+            foreach ($g['activities'] as $a) {
+                $activities[] = [PlanActivity::where('name_am', $a['name_am'])->firstOrFail(), $a];
+            }
+        }
+
+        foreach ($activities as [$activity, $a]) {
+            if ($a['zone_plan'] === null) {
+                continue;
+            }
+            foreach ($woredas as $woreda) {
+                PlanTarget::firstOrCreate(
+                    ['plan_activity_id' => $activity->id, 'location_id' => $woreda->id, 'fiscal_year' => $year],
+                    ['target' => round($a['zone_plan'] / max($woredas->count(), 1), 3)],
+                );
+            }
+        }
+
+        foreach ($data['woredas'] as $col => $code) {
+            $woreda = $woredas->get($code);
+            $woredaUser = $woreda ? User::where('role', Role::Woreda->value)->where('location_id', $woreda->id)->first() : null;
+            if (! $woredaUser) {
+                continue;
+            }
+
+            $report = WeeklyPlanReport::create([
+                'woreda_id' => $woreda->id,
+                'user_id' => $woredaUser->id,
+                'fiscal_year' => $year,
+                'week_start' => $week,
+                'status' => WeeklyPlanStatus::Draft,
+                'notes' => 'ናሙና፦ ከሳምንታዊ ማትሪክስ ሰነድ የተወሰደ እስከ አሁን የተከማቸ ክንውን።',
+            ]);
+            foreach ($activities as [$activity, $a]) {
+                if ($a['actuals'][$col] !== null) {
+                    $report->actuals()->create(['plan_activity_id' => $activity->id, 'value' => $a['actuals'][$col]]);
+                }
+            }
+
+            $workflow->record($report, $woredaUser, 'create', null, WeeklyPlanStatus::Draft);
+            $workflow->submit($report, $woredaUser);
+            if ($zoneUser) {
+                $workflow->approve($report, $zoneUser);
             }
         }
     }

@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Enums\Level;
 use App\Enums\PerformanceBand;
 use App\Enums\ReportStatus;
+use App\Enums\WeeklyPlanStatus;
 use App\Models\ExtensionReport;
 use App\Models\Location;
+use App\Models\WeeklyPlanReport;
 use App\Services\ExtensionPerformance;
+use App\Services\PlanMatrix;
 use App\Support\Period;
 use Illuminate\Http\Request;
 
@@ -54,7 +57,21 @@ class DashboardController extends Controller
 
         $bandCounts = $rows->countBy(fn ($r) => $r['band']->value);
 
+        $weekly = null;
+        if ($user->isZone() || $user->isWoreda()) {
+            $lastWeek = PlanMatrix::weekStart(today())->subWeek();
+            $countedLastWeek = WeeklyPlanReport::query()->visibleTo($user)->whereDate('week_start', $lastWeek)
+                ->whereIn('status', WeeklyPlanStatus::counted())->pluck('woreda_id');
+            $weekly = [
+                'lastWeek' => $lastWeek,
+                'pending' => WeeklyPlanReport::query()->visibleTo($user)
+                    ->where('status', $user->isZone() ? WeeklyPlanStatus::Submitted->value : WeeklyPlanStatus::Returned->value)->count(),
+                'missing' => app(PlanMatrix::class)->woredasFor($user)->reject(fn ($w) => $countedLastWeek->contains($w->id))->values(),
+            ];
+        }
+
         return view('dashboard', [
+            'weekly' => $weekly,
             'period' => $period,
             'woredas' => $woredas,
             'woredaId' => $woredaId,

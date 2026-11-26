@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 
 class EthiopianDate
 {
@@ -22,6 +23,44 @@ class EthiopianDate
         $ed = ($n % 30) + 1;
 
         return [$ey, $em, $ed];
+    }
+
+    /** Gregorian date for an Ethiopian [year, month, day]. */
+    public static function toGregorian(int $year, int $month, int $day): Carbon
+    {
+        $jdn = 1723856 + 365 + 365 * ($year - 1) + intdiv($year, 4) + 30 * $month + $day - 31;
+
+        $l = $jdn + 68569;
+        $n = intdiv(4 * $l, 146097);
+        $l -= intdiv(146097 * $n + 3, 4);
+        $i = intdiv(4000 * ($l + 1), 1461001);
+        $l = $l - intdiv(1461 * $i, 4) + 31;
+        $j = intdiv(80 * $l, 2447);
+        $d = $l - intdiv(2447 * $j, 80);
+        $l = intdiv($j, 11);
+        $m = $j + 2 - 12 * $l;
+        $y = 100 * ($n - 49) + $i + $l;
+
+        return Carbon::create($y, $m, $d)->startOfDay();
+    }
+
+    /** Plan (budget) year a Gregorian date belongs to — see config/plan.php. */
+    public static function fiscalYear(CarbonInterface $date): int
+    {
+        [$ey, $em] = self::fromGregorian((int) $date->format('Y'), (int) $date->format('n'), (int) $date->format('j'));
+        $start = (int) config('plan.fiscal_year_start_month', 11);
+
+        return $start > 1 && $em >= $start ? $ey + 1 : $ey;
+    }
+
+    /** @return array{0:Carbon,1:Carbon} first and last day of a plan year */
+    public static function fiscalYearRange(int $fiscalYear): array
+    {
+        $start = (int) config('plan.fiscal_year_start_month', 11);
+        $from = self::toGregorian($start > 1 ? $fiscalYear - 1 : $fiscalYear, max($start, 1), 1);
+        $nextFrom = self::toGregorian($start > 1 ? $fiscalYear : $fiscalYear + 1, max($start, 1), 1);
+
+        return [$from, $nextFrom->subDay()];
     }
 
     public static function format(?CarbonInterface $date): string

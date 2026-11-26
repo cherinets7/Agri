@@ -17,6 +17,13 @@
             @can('create', App\Models\ExtensionReport::class)
                 <a href="{{ route('reports.create') }}" @class(['active' => request()->routeIs('reports.create')])>+ አዲስ ዕለታዊ ሪፖርት</a>
             @endcan
+            @can('view-matrix')
+                <a href="{{ route('matrix.index') }}" @class(['active' => request()->routeIs('matrix.*')])>ሳምንታዊ ማትሪክስ</a>
+                <a href="{{ route('weekly.index') }}" @class(['active' => request()->routeIs('weekly.*')])>ሳምንታዊ ክንውን</a>
+            @endcan
+            @can('manage-plan')
+                <a href="{{ route('plan.edit') }}" @class(['active' => request()->routeIs('plan.*')])>ዕቅድ</a>
+            @endcan
             @if(auth()->user()->isZone() || auth()->user()->isWoreda())
                 <a href="{{ route('users.index') }}" @class(['active' => request()->routeIs('users.*')])>ተጠቃሚዎች</a>
                 <a href="{{ route('locations.index') }}" @class(['active' => request()->routeIs('locations.*')])>አካባቢዎች</a>

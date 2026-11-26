@@ -5,7 +5,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ExtensionReportController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\PlanMatrixController;
+use App\Http\Controllers\PlanStructureController;
+use App\Http\Controllers\PlanTargetController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WeeklyPlanReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -32,6 +36,28 @@ Route::middleware('auth')->group(function () {
     Route::post('/reports/{report}/return', [ExtensionReportController::class, 'return'])->name('reports.return');
 
     Route::get('/exports/reports', [ExportController::class, 'reports'])->name('exports.reports');
+    Route::get('/matrix', [PlanMatrixController::class, 'index'])->name('matrix.index');
+    Route::get('/exports/matrix', [ExportController::class, 'matrix'])->name('exports.matrix');
+
+    Route::get('/weekly-plan', [WeeklyPlanReportController::class, 'index'])->name('weekly.index');
+    Route::get('/weekly-plan/create', [WeeklyPlanReportController::class, 'create'])->name('weekly.create');
+    Route::post('/weekly-plan', [WeeklyPlanReportController::class, 'store'])->name('weekly.store');
+    Route::get('/weekly-plan/{weeklyReport}', [WeeklyPlanReportController::class, 'show'])->name('weekly.show');
+    Route::get('/weekly-plan/{weeklyReport}/edit', [WeeklyPlanReportController::class, 'edit'])->name('weekly.edit');
+    Route::put('/weekly-plan/{weeklyReport}', [WeeklyPlanReportController::class, 'update'])->name('weekly.update');
+    Route::delete('/weekly-plan/{weeklyReport}', [WeeklyPlanReportController::class, 'destroy'])->name('weekly.destroy');
+    Route::post('/weekly-plan/{weeklyReport}/submit', [WeeklyPlanReportController::class, 'submit'])->name('weekly.submit');
+    Route::post('/weekly-plan/{weeklyReport}/approve', [WeeklyPlanReportController::class, 'approve'])->name('weekly.approve');
+    Route::post('/weekly-plan/{weeklyReport}/return', [WeeklyPlanReportController::class, 'return'])->name('weekly.return');
+
+    Route::get('/plan', [PlanTargetController::class, 'edit'])->name('plan.edit');
+    Route::put('/plan', [PlanTargetController::class, 'update'])->name('plan.update');
+    Route::get('/plan/structure', [PlanStructureController::class, 'index'])->name('plan.structure');
+    Route::post('/plan/goals', [PlanStructureController::class, 'storeGoal'])->name('plan.goals.store');
+    Route::put('/plan/goals/{goal}', [PlanStructureController::class, 'updateGoal'])->name('plan.goals.update');
+    Route::post('/plan/activities', [PlanStructureController::class, 'storeActivity'])->name('plan.activities.store');
+    Route::put('/plan/activities/{activity}', [PlanStructureController::class, 'updateActivity'])->name('plan.activities.update');
+
     Route::get('/exports/performance', [ExportController::class, 'performance'])->name('exports.performance');
 
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

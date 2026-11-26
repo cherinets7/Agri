@@ -88,6 +88,25 @@
     </div>
 @endunless
 
+@if($weekly)
+    <h2>ሳምንታዊ ዕቅድ/ክንውን ማትሪክስ</h2>
+    <div class="grid cols-2">
+        <div class="card">
+            <strong>{{ $user->isZone() ? 'ለማጽደቅ የሚጠብቁ የወረዳ ሳምንታዊ ሪፖርቶች' : 'የተመለሱ ሳምንታዊ ሪፖርቶች' }}፦ {{ $weekly['pending'] }}</strong>
+            <div class="actions"><a class="btn sm" href="{{ route('weekly.index', ['status' => $user->isZone() ? 'submitted' : 'returned']) }}">ክፈት</a>
+                <a class="btn sm secondary" href="{{ route('matrix.index') }}">ማትሪክስ</a></div>
+        </div>
+        <div class="card">
+            <strong>ባለፈው ሳምንት ({{ et_date($weekly['lastWeek']) }}) ሳምንታዊ ክንውን ያልላኩ ወረዳዎች</strong>
+            @forelse($weekly['missing'] as $w)
+                <div style="margin-top:.4rem"><span class="badge gray">ያልተላከ</span> {{ $w->name_am }}</div>
+            @empty
+                <p class="muted">ሁሉም ወረዳዎች ልከዋል።</p>
+            @endforelse
+        </div>
+    </div>
+@endif
+
 @if($woredaRows->isNotEmpty())
     <h2>የወረዳዎች አፈጻጸም</h2>
     <div class="card table-wrap">
